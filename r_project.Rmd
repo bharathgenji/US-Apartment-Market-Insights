@@ -1,0 +1,115 @@
+---
+title: "Data_science_Pro"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-10-16"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+
+
+library(readxl)
+cleaned_data <- read_excel("C:/Users/Chinmay/OneDrive/Desktop/Intro to datascience project/cleaned_data.xlsx")
+View(cleaned_data)
+
+```
+
+
+
+```{r}
+head(cleaned_data)
+
+```
+```{r}
+
+install.packages("tidyverse")
+
+
+library(tidyverse)
+
+bed_bath_price <- cleaned_data %>%
+  group_by(bedrooms, bathrooms) %>%
+  summarise(avg_price = mean(price, na.rm = TRUE)) %>%
+  arrange(bedrooms, bathrooms)
+
+
+library(ggplot2)
+
+
+ggplot(bed_bath_price, aes(x = bedrooms, y = bathrooms, fill = avg_price)) + 
+  geom_tile() +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  labs(title = "Average Rental Price by Number of Bedrooms and Bathrooms",
+       x = "Number of Bedrooms",
+       y = "Number of Bathrooms",
+       fill = "Average Price") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+```
+
+```{r}
+
+
+r_code_correlation_fix = 
+
+cleaned_data$bedrooms <- as.numeric(cleaned_data$bedrooms)
+cleaned_data$bathrooms <- as.numeric(cleaned_data$bathrooms)
+cleaned_data$price <- as.numeric(cleaned_data$price)
+
+
+correlations <- cleaned_data %>%
+  select(bedrooms, bathrooms, price) %>%
+  na.omit() %>%
+  cor(use = "complete.obs")
+
+
+
+r_code_ggplot_heatmap_corrected =
+
+cor_melted <- as.data.frame(as.table(correlations))
+names(cor_melted) <- c("Var1", "Var2", "value")
+
+# Visualize using ggplot2
+heatmap_plot <- ggplot(data = cor_melted, aes(x = Var1, y = Var2)) +
+  geom_tile(aes(fill = value), colour = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab",
+                       name="Pearson\nCorrelation") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1)) +
+  coord_fixed() +
+  geom_text(aes(Var1, Var2, label = sprintf("%.2f", value)), 
+            vjust = 1, size = 3) +
+  labs(x = "", y = "", title = "Correlation between Variables") +
+  theme(legend.position = "bottom", 
+        legend.direction = "horizontal")
+
+heatmap_plot
+
+
+
+
+
+r_code_ggplot_heatmap_corrected
+
+
+```
+```{r}
+tinytex::install_tinytex()
+install.packages(tinytex)
+```
+
