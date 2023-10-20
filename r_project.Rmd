@@ -2,6 +2,7 @@
 title: "Data_science_Pro"
 output:
   pdf_document: default
+
   html_document: default
 date: "2023-10-16"
 ---
@@ -20,96 +21,144 @@ When you click the **Knit** button a document will be generated that includes bo
 
 
 library(readxl)
-cleaned_data <- read_excel("C:/Users/Chinmay/OneDrive/Desktop/Intro to datascience project/cleaned_data.xlsx")
-View(cleaned_data)
+data<- read_excel("C:/Users/Chinmay/OneDrive/Desktop/Intro to datascience project/cleaned_data.xlsx")
+
 
 ```
 
 
 
 ```{r}
-head(cleaned_data)
+
+library(tidyverse)
 
 ```
+
 ```{r}
 
 install.packages("tidyverse")
 
 
-library(tidyverse)
+# Filter for cities with a certain number of listings
+top_cities <- cleaned_data %>%
+  count(cityname) %>%
+  filter(n > 100) %>%
+  pull(cityname)
 
-bed_bath_price <- cleaned_data %>%
-  group_by(bedrooms, bathrooms) %>%
-  summarise(avg_price = mean(price, na.rm = TRUE)) %>%
-  arrange(bedrooms, bathrooms)
+bed_bath_city_price_filtered <- bed_bath_city_price %>%
+  filter(cityname %in% top_cities)
 
-
-library(ggplot2)
-
-
-ggplot(bed_bath_price, aes(x = bedrooms, y = bathrooms, fill = avg_price)) + 
-  geom_tile() +
+# Plot
+ggplot(bed_bath_city_price_filtered, aes(x = bedrooms, y = bathrooms, fill = avg_price)) + 
+  geom_raster() +
   scale_fill_gradient(low = "white", high = "red") +
   theme_minimal() +
   labs(title = "Average Rental Price by Number of Bedrooms and Bathrooms",
        x = "Number of Bedrooms",
        y = "Number of Bathrooms",
        fill = "Average Price") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  facet_wrap(~ cityname, scales = "free", ncol = 4)
+
 
 
 ```
 
-```{r}
-
-
-r_code_correlation_fix = 
-
-cleaned_data$bedrooms <- as.numeric(cleaned_data$bedrooms)
-cleaned_data$bathrooms <- as.numeric(cleaned_data$bathrooms)
-cleaned_data$price <- as.numeric(cleaned_data$price)
-
-
-correlations <- cleaned_data %>%
-  select(bedrooms, bathrooms, price) %>%
-  na.omit() %>%
-  cor(use = "complete.obs")
-
-
-
-r_code_ggplot_heatmap_corrected =
-
-cor_melted <- as.data.frame(as.table(correlations))
-names(cor_melted) <- c("Var1", "Var2", "value")
-
-# Visualize using ggplot2
-heatmap_plot <- ggplot(data = cor_melted, aes(x = Var1, y = Var2)) +
-  geom_tile(aes(fill = value), colour = "white") +
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0, limit = c(-1,1), space = "Lab",
-                       name="Pearson\nCorrelation") +
-  theme_minimal() + 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
-                                   size = 12, hjust = 1)) +
-  coord_fixed() +
-  geom_text(aes(Var1, Var2, label = sprintf("%.2f", value)), 
-            vjust = 1, size = 3) +
-  labs(x = "", y = "", title = "Correlation between Variables") +
-  theme(legend.position = "bottom", 
-        legend.direction = "horizontal")
-
-heatmap_plot
-
-
-
-
-
-r_code_ggplot_heatmap_corrected
-
-
-```
 ```{r}
 tinytex::install_tinytex()
 install.packages(tinytex)
 ```
 
+
+
+``` {r}
+
+
+
+states_map <- map_data("state")
+
+
+
+
+
+```
+
+
+
+
+```{r}
+# Convert state abbreviations to full names
+state.abb2name <- setNames(tolower(state.name), state.abb)
+
+# Map state abbreviations to full names in your dataset
+cleaned_data$state_full <- ifelse(cleaned_data$state %in% state.abb, 
+                                  state.abb2name[cleaned_data$state], 
+                                  NA)
+
+# Calculate average rental prices by full state name
+state_avg_prices <- cleaned_data %>%
+  filter(!is.na(state_full)) %>%
+  group_by(state_full) %>%
+  summarize(avg_price = mean(price, na.rm = TRUE))
+
+# Merge the spatial data with the average prices
+state_data_merged <- left_join(states_map, state_avg_prices, by = c("region" = "state_full"))
+
+# Plot the choropleth map
+ggplot(data = state_data_merged, aes(x = long, y = lat, group = group, fill = avg_price)) +
+  geom_polygon(color = "white") +
+  scale_fill_gradient(low = "blue", high = "red", na.value = "grey50", name = "Avg. Price") +
+  labs(title = "Average Rental Price by State") +
+  theme_minimal() +
+  coord_fixed(1.3)
+
+
+
+```
+```{r}
+# Plot the enhanced choropleth map
+p <- ggplot(data = state_data_merged, aes(x = long, y = lat)) +
+  geom_polygon(aes(fill = avg_price, group = group), color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = median(state_data_merged$avg_price, na.rm = TRUE),
+                       na.value = "grey50", name = "Avg. Price") +
+  labs(title = "Average Rental Price by State", subtitle = "Colored by Average Price, Annotated with Median Price") +
+  theme_minimal() +
+  coord_fixed(1.3) +
+  geom_text(data = state_prices_centroids, aes(x = long, y = lat, label = round(median_price, 0)), size = 2.5, check_overlap = TRUE)
+
+# Highlight states with the highest and lowest average prices
+highest_state <- state_data_merged$region[which.max(state_data_merged$avg_price)]
+lowest_state <- state_data_merged$region[which.min(state_data_merged$avg_price)]
+p + annotate("text", x = -70, y = 25, label = paste("Highest:", highest_state), color = "red") +
+  annotate("text", x = -70, y = 23, label = paste("Lowest:", lowest_state), color = "blue")
+
+
+
+
+```
+
+```{r}
+# Drop the latitude column
+all_numeric_clean <- all_numeric_clean %>% select(-latitude)
+
+# Compute the correlation matrix for the remaining columns
+cor_matrix_all <- cor(all_numeric_clean)
+
+# Convert the correlation matrix into a tidy format
+cor_data_all <- as.data.frame(as.table(cor_matrix_all))
+
+# Plot the correlation heatmap using ggplot2
+ggplot(data = cor_data_all, aes(Var1, Var2)) +
+  geom_tile(aes(fill = Freq), color = "white") +
+  geom_text(aes(label = sprintf("%.2f", Freq)), size = 3) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
+                       limits = c(-1, 1), name = "Correlation") +
+  theme_minimal() +
+  labs(title = "Correlation between Selected Features", x = "", y = "") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
+        axis.text.y = element_text(size = 8))
+
+
+
+
+```
