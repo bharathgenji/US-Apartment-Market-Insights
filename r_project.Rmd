@@ -73,13 +73,7 @@ install.packages(tinytex)
 
 ``` {r}
 
-
-
 states_map <- map_data("state")
-
-
-
-
 
 ```
 
@@ -159,6 +153,66 @@ ggplot(data = cor_data_all, aes(Var1, Var2)) +
         axis.text.y = element_text(size = 8))
 
 
+
+
+```
+
+```{r}
+# Identify factor columns with only one level
+# Convert all factor variables with only one level to character variables
+data_with_dummies <- data_with_dummies %>%
+  mutate(across(where(is.factor), ~ if(length(levels(.)) <= 1) as.character(.) else .))
+
+# Remove all character columns
+data_with_dummies <- data_with_dummies %>%
+  select(where(~ !is.character(.)))
+
+# Regression Analysis
+formula <- as.formula(paste("price ~ square_feet + bedrooms + bathrooms +", 
+                            paste(setdiff(names(data_with_dummies), "price"), collapse = " + ")))
+model <- lm(formula, data = data_with_dummies)
+
+# Output the summary of the regression
+summary(model)
+
+
+```
+
+```{r}
+
+# Residuals vs Fitted values plot
+ggplot(data = model, aes(x = .fitted, y = .resid)) +
+  geom_point(aes(color = .resid), alpha = 0.5) +
+  geom_smooth(se = FALSE, method = "loess", color = "red") +
+  theme_minimal() +
+  labs(title = "Residuals vs. Fitted",
+       x = "Fitted values",
+       y = "Residuals",
+       color = "Residual Value") +
+  theme(legend.position = "none")
+
+```
+```{r}
+# Predicting the prices using the model
+predicted_prices = predict(model, data_with_dummies)
+
+# Plotting the actual vs. predicted prices
+plot_data = data.frame(Actual = data_with_dummies$price, Predicted = predicted_prices)
+
+ggplot(plot_data, aes(x = Actual, y = Predicted)) +
+  geom_point(aes(color = abs(Actual - Predicted)), alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Actual vs. Predicted Prices", 
+       x = "Actual Prices", 
+       y = "Predicted Prices",
+       color = "Error") +
+  theme_minimal()
+
+```
+```{r}
+install.packages("lmtest")
+library(lmtest)
+durbinWatsonTest(model)
 
 
 ```
