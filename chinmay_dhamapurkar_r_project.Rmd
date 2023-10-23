@@ -25,6 +25,47 @@ data<- read_excel("C:/Users/Chinmay/OneDrive/Desktop/Intro to datascience projec
 
 
 ```
+```{r}
+data_analysis <- colSums(is.na(cleaned_data))
+
+print(data_analysis)
+dimensions=dim(cleaned_data)
+print(dimensions)
+```
+```{r}
+# Drop the latitude column
+# Remove the latitude column
+# Check if the "latitude" column exists in the dataset
+install.packages("ggplot2")
+library(ggplot2)
+if ("latitude" %in% colnames(all_numeric_clean)) {
+  # Remove the "latitude" column
+  all_numeric_clean <- all_numeric_clean %>% select(-latitude)
+}
+
+
+
+# Compute the correlation matrix for the remaining columns
+cor_matrix_all <- cor(all_numeric_clean)
+
+# Convert the correlation matrix into a tidy format
+cor_data_all <- as.data.frame(as.table(cor_matrix_all))
+
+# Plot the correlation heatmap using ggplot2
+ggplot(data = cor_data_all, aes(Var1, Var2)) +
+  geom_tile(aes(fill = Freq), color = "white") +
+  geom_text(aes(label = sprintf("%.2f", Freq)), size = 3) +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
+                       limits = c(-1, 1), name = "Correlation") +
+  theme_minimal() +
+  labs(title = "Correlation between Selected Features", x = "", y = "") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
+        axis.text.y = element_text(size = 8))
+
+
+
+
+```
 
 ```{r}
 
@@ -102,13 +143,7 @@ p1 <- ggplot(avg_prices, aes(x = reorder(bed_bath_combo, -avg_rental_price), y =
 # Show the plot
 print(p1)
 ```
-```{r}
-data_analysis <- colSums(is.na(cleaned_data))
 
-print(data_analysis)
-dimensions=dim(cleaned_data)
-print(dimensions)
-```
 
 ```{r}
 
@@ -146,57 +181,11 @@ cleaned_data$state <- as.factor(cleaned_data$state)
 anova_result <- aov(price ~ state, data = cleaned_data)
 summary(anova_result)
 
-
-
 ```
-```{r}
-# Tukey's HSD test
-tukey_result <- TukeyHSD(anova_result)
-tukey_result
 
-```
 ```{r}
 install.packages("ggsignif")
 install.packages("multcompView")
-
-```
-```{r}
-# Load required libraries
-# Load required libraries
-install.packages(c("ggplot2", "dplyr", "broom"))
-library(ggplot2)
-library(dplyr)
-library(broom)
-
-# Load the dataset
-
-# Filter the data to include only states with sufficient observations
-min_observations <- 30  # Adjust this number as needed
-data <- cleaned_data %>%
-  group_by(state) %>%
-  filter(n() >= min_observations)
-
-# ANOVA
-anova_model <- aov(price ~ as.factor(state), data = data)
-anova_summary <- tidy(anova_model)
-print(anova_summary)
-
-# Creating a cleaner boxplot
-p <- ggplot(data, aes(x = reorder(as.factor(state), -price), y = price)) +
-  geom_boxplot(fill = "skyblue", outlier.colour = "red", outlier.shape = 1) +
-  labs(title = "Price Distribution by State",
-       x = "State",
-       y = "Price") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.margin = unit(c(1, 3, 1, 1), "cm"))
-
-# Display the plot
-print(p)
-
-
-
-
 
 ```
 ```{r}
@@ -249,10 +238,7 @@ kable(summary_table, caption = "ANOVA Summary Results", align = 'c', format = "h
 
 
 ```
-```{r}
-tinytex::install_tinytex()
-install.packages(tinytex)
-```
+
 ```{r}
 data <- data %>%
   select(amenities, price) %>%
@@ -309,18 +295,10 @@ p1 <- ggplot(price_diff, aes(x = reorder(amenity, price_difference), y = price_d
 print(p1)
 ```
 
-
-``` {r}
-
-states_map <- map_data("state")
-
-```
-
-
-
-
 ```{r}
 # Convert state abbreviations to full names
+
+states_map <- map_data("state")
 state.abb2name <- setNames(tolower(state.name), state.abb)
 
 # Map state abbreviations to full names in your dataset
@@ -369,39 +347,11 @@ p + annotate("text", x = -70, y = 25, label = paste("Highest:", highest_state), 
 
 
 ```
-
 ```{r}
-# Drop the latitude column
-# Remove the latitude column
-# Check if the "latitude" column exists in the dataset
-if ("latitude" %in% colnames(all_numeric_clean)) {
-  # Remove the "latitude" column
-  all_numeric_clean <- all_numeric_clean %>% select(-latitude)
-}
-
-
-
-# Compute the correlation matrix for the remaining columns
-cor_matrix_all <- cor(all_numeric_clean)
-
-# Convert the correlation matrix into a tidy format
-cor_data_all <- as.data.frame(as.table(cor_matrix_all))
-
-# Plot the correlation heatmap using ggplot2
-ggplot(data = cor_data_all, aes(Var1, Var2)) +
-  geom_tile(aes(fill = Freq), color = "white") +
-  geom_text(aes(label = sprintf("%.2f", Freq)), size = 3) +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
-                       limits = c(-1, 1), name = "Correlation") +
-  theme_minimal() +
-  labs(title = "Correlation between Selected Features", x = "", y = "") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
-        axis.text.y = element_text(size = 8))
-
-
-
-
+data
 ```
+
+
 
 ```{r}
 # Identify factor columns with only one level
@@ -455,10 +405,8 @@ ggplot(plot_data, aes(x = Actual, y = Predicted)) +
   theme_minimal()
 
 ```
-```{r}
-install.packages("lmtest")
-library(lmtest)
-durbinWatsonTest(model)
 
 
-```
+
+
+
