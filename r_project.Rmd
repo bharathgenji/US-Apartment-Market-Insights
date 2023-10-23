@@ -1,7 +1,7 @@
 ---
-title: "Data_science_Pro"
+title: "US-Apartment-Market-Insights"
 output:
-  pdf_document: default
+  pdf_document: 
 
   html_document: default
 date: "2023-10-16"
@@ -12,35 +12,80 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
+#install.packages("tidyverse")
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
-```{r cars}
+```{r}
 
 
 library(readxl)
-data<- read_excel("C:/Users/Chinmay/OneDrive/Desktop/Intro to datascience project/cleaned_data.xlsx")
-
-
-```
-
-
-
-```{r}
-
 library(tidyverse)
 
+
+
 ```
+
+
 
 ```{r}
 
-install.packages("tidyverse")
+# Define file path based on current directory
+file_path <- file.path(getwd(), "apartments_for_rent_classified_10K.xlsx")
+
+# Check if file exists
+if (!file.exists(file_path)) {
+  stop("File not found in the current working directory!")
+}
+
+# Read the Excel file
+apartments_data <- read_excel(file_path)
+```
+
+```{r}
+# Display the first few rows of the dataset
+head(apartments_data)
+
+# Display the last few rows of the dataset
+tail(apartments_data)
+
+# Get the structure of the dataset
+str(apartments_data)
+
+# Get a summary of the dataset
+summary(apartments_data)
+
+# Understand the dimensions of the data
+dim(apartments_data)
+
+# Display the names of the columns
+names(apartments_data)
+
+
+```
+```{r}
+# Check for missing values in the dataset
+sum(is.na(apartments_data))
+
+# Remove rows with missing values (you can also impute them if you prefer)
+apartments_data_clean <- na.omit(apartments_data)
+
+# Check for duplicates
+sum(duplicated(apartments_data_clean))
+
+# Remove duplicates
+apartments_data_clean <- unique(apartments_data_clean)
+
+```
+
+
+
+```{r}
+
 
 
 # Filter for cities with a certain number of listings
-top_cities <- cleaned_data %>%
+top_cities <- apartments_data_clean %>%
   count(cityname) %>%
   filter(n > 100) %>%
   pull(cityname)
