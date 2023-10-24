@@ -18,7 +18,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 
-
+# Load necessary libraries
+library(ggplot2)
 library(readxl)
 library(tidyverse)
 
@@ -31,15 +32,16 @@ library(tidyverse)
 ```{r}
 
 # Define file path based on current directory
-file_path <- file.path(getwd(), "apartments_for_rent_classified_10K.xlsx")
+file_path <- file.path(getwd(), "apartments_for_rent_classified_10K.csv")
 
 # Check if file exists
 if (!file.exists(file_path)) {
   stop("File not found in the current working directory!")
 }
 
-# Read the Excel file
-apartments_data <- read_excel(file_path)
+# Read the csv file
+apartments_data <- read.csv(file_path, header = TRUE,sep = ';')
+
 ```
 
 ```{r}
@@ -79,185 +81,210 @@ apartments_data_clean <- unique(apartments_data_clean)
 ```
 
 
+```{r}
+head(apartments_data_clean)
+
+
+# Histogram for numerical variables. For example, if you have a column named 'price':
+ggplot(apartments_data_clean, aes(x = price)) + 
+  geom_histogram(binwidth = 50, fill = "blue", alpha = 0.7) + 
+  theme_minimal() + 
+  labs(title = "Distribution of Price", x = "Price", y = "Frequency")
+
+# Boxplot for numerical variables against categorical ones. E.g., 'price' against 'location (State)':
+ggplot(apartments_data_clean, aes(x = state, y = price)) + 
+  geom_boxplot() + 
+  theme_minimal() + 
+  labs(title = "Price Distribution by Location", x = "State", y = "Price")
+
+# Scatterplot for two numerical variables. E.g., 'price' against 'square_feet':
+ggplot(apartments_data_clean, aes(x = square_feet, y = price)) + 
+  geom_point(alpha = 0.5) + 
+  theme_minimal() + 
+  labs(title = "Price vs. Square Feet", x = "Square Feet", y = "Price")
+
+
+```
+
+
+Handling Outliers
+```{r}
+# For a variable like 'price', compute the IQR:
+Q1 <- quantile(apartments_data_clean$price, 0.25)
+Q3 <- quantile(apartments_data_clean$price, 0.75)
+IQR <- Q3 - Q1
+
+# Define bounds for outliers
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+# Filter out outliers
+apartments_data_no_outliers <- apartments_data_clean %>%
+  filter(price >= lower_bound & price <= upper_bound)
+
+# Visualize price without outliers
+ggplot(apartments_data_no_outliers, aes(x = price)) + 
+  geom_histogram(binwidth = 50, fill = "blue", alpha = 0.7) + 
+  theme_minimal() + 
+  labs(title = "Distribution of Price (No Outliers)", x = "Price", y = "Frequency")
+
+```
+
+
+1.  Are there specific amenities that significantly influence the classification category of an apartment listing?
+
+
+
+a. Data Preparation: Extract and format amenities data.
+
+b. Chi-Square Tests: For each amenity, conduct a Chi-Square test with the apartment category.
+
+c. Visualization: Visualize the significant amenities in relation to apartment categories.
 
 ```{r}
+# 1. Data Preparation
+# Assuming amenities are separated by commas in the 'amenities' column
+amenities_list <- strsplit(as.character(apartments_data$amenities), split = ",")
+unique_amenities <- unique(unlist(amenities_list))
+
+# Create a data frame where each amenity is a binary column
+amenities_df <- matrix(0, nrow(apartments_data), length(unique_amenities))
+colnames(amenities_df) <- unique_amenities
+
+for (i in 1:length(amenities_list)) {
+    amenities_df[i, amenities_list[[i]]] <- 1
+}
+
+amenities_df <- as.data.frame(amenities_df)
+
+# 2. Chi-Square Tests
+chi_square_results <- sapply(colnames(amenities_df), function(amenity) {
+    chisq_test <- chisq.test(amenities_df[[amenity]], apartments_data$category)
+    return(chisq_test$p.value)
+})
 
 
 
-# Filter for cities with a certain number of listings
-top_cities <- apartments_data_clean %>%
-  count(cityname) %>%
-  filter(n > 100) %>%
-  pull(cityname)
+# Combine results
+results <- list(chi_square_results = chi_square_results)
 
-bed_bath_city_price_filtered <- bed_bath_city_price %>%
-  filter(cityname %in% top_cities)
+results
 
-# Plot
-ggplot(bed_bath_city_price_filtered, aes(x = bedrooms, y = bathrooms, fill = avg_price)) + 
-  geom_raster() +
-  scale_fill_gradient(low = "white", high = "red") +
+df_chi_square <- data.frame(amenity = names(chi_square_results),
+                            p_value = as.numeric(chi_square_results))
+
+# 2. Plotting the p-values
+
+threshold <- 0.05
+
+ggplot(df_chi_square, aes(x = reorder(amenity, p_value), y = p_value)) + 
+  geom_bar(stat="identity", aes(fill = p_value < threshold)) +
+  coord_flip() + 
+  geom_hline(yintercept = threshold, linetype="dashed", color = "red") +
+  labs(title = "Significance Levels (p-values) of Amenities from Chi-Square Tests",
+       x = "Amenity",
+       y = "p-value",
+       fill = "Significant at 0.05 level") +
   theme_minimal() +
-  labs(title = "Average Rental Price by Number of Bedrooms and Bathrooms",
-       x = "Number of Bedrooms",
-       y = "Number of Bathrooms",
-       fill = "Average Price") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  facet_wrap(~ cityname, scales = "free", ncol = 4)
+  theme(legend.position="none")
+
+
+
+
+
 
 
 
 ```
+In summary:
 
+If an amenity's bar does not cross the red dashed line, it means that there's a statistically significant association between that amenity and the classification category of the apartment. In other words, the presence or absence of that amenity has a significant effect on how the apartment is categorized.
+Conversely, if the bar crosses the red line, there's no significant association between that amenity and the apartment's classification category, at least at the 0.05 significance level.
 ```{r}
-tinytex::install_tinytex()
-install.packages(tinytex)
-```
+library(ggplot2)
 
+# Top 10 Cities by Average Rental Price
+top_cities <- head(city_avg_price, 10)
 
+ggplot(top_cities, aes(x = reorder(cityname, price), y = price)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  geom_hline(yintercept = overall_avg_price, color = "red", linetype = "dashed") +
+  coord_flip() +  # Flip the coordinates for a horizontal bar chart
+  labs(title = "Top 10 Cities by Average Rental Price",
+       x = "City", y = "Average Rental Price") +
+  theme_minimal()
 
-``` {r}
+# Top 10 States by Average Rental Price
+top_states <- head(state_avg_price, 10)
 
-states_map <- map_data("state")
-
-```
-
-
-
-
-```{r}
-# Convert state abbreviations to full names
-state.abb2name <- setNames(tolower(state.name), state.abb)
-
-# Map state abbreviations to full names in your dataset
-cleaned_data$state_full <- ifelse(cleaned_data$state %in% state.abb, 
-                                  state.abb2name[cleaned_data$state], 
-                                  NA)
-
-# Calculate average rental prices by full state name
-state_avg_prices <- cleaned_data %>%
-  filter(!is.na(state_full)) %>%
-  group_by(state_full) %>%
-  summarize(avg_price = mean(price, na.rm = TRUE))
-
-# Merge the spatial data with the average prices
-state_data_merged <- left_join(states_map, state_avg_prices, by = c("region" = "state_full"))
-
-# Plot the choropleth map
-ggplot(data = state_data_merged, aes(x = long, y = lat, group = group, fill = avg_price)) +
-  geom_polygon(color = "white") +
-  scale_fill_gradient(low = "blue", high = "red", na.value = "grey50", name = "Avg. Price") +
-  labs(title = "Average Rental Price by State") +
-  theme_minimal() +
-  coord_fixed(1.3)
-
-
-
-```
-```{r}
-# Plot the enhanced choropleth map
-p <- ggplot(data = state_data_merged, aes(x = long, y = lat)) +
-  geom_polygon(aes(fill = avg_price, group = group), color = "white") +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = median(state_data_merged$avg_price, na.rm = TRUE),
-                       na.value = "grey50", name = "Avg. Price") +
-  labs(title = "Average Rental Price by State", subtitle = "Colored by Average Price, Annotated with Median Price") +
-  theme_minimal() +
-  coord_fixed(1.3) +
-  geom_text(data = state_prices_centroids, aes(x = long, y = lat, label = round(median_price, 0)), size = 2.5, check_overlap = TRUE)
-
-# Highlight states with the highest and lowest average prices
-highest_state <- state_data_merged$region[which.max(state_data_merged$avg_price)]
-lowest_state <- state_data_merged$region[which.min(state_data_merged$avg_price)]
-p + annotate("text", x = -70, y = 25, label = paste("Highest:", highest_state), color = "red") +
-  annotate("text", x = -70, y = 23, label = paste("Lowest:", lowest_state), color = "blue")
-
-
-
-
-```
-
-```{r}
-# Drop the latitude column
-all_numeric_clean <- all_numeric_clean %>% select(-latitude)
-
-# Compute the correlation matrix for the remaining columns
-cor_matrix_all <- cor(all_numeric_clean)
-
-# Convert the correlation matrix into a tidy format
-cor_data_all <- as.data.frame(as.table(cor_matrix_all))
-
-# Plot the correlation heatmap using ggplot2
-ggplot(data = cor_data_all, aes(Var1, Var2)) +
-  geom_tile(aes(fill = Freq), color = "white") +
-  geom_text(aes(label = sprintf("%.2f", Freq)), size = 3) +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0, 
-                       limits = c(-1, 1), name = "Correlation") +
-  theme_minimal() +
-  labs(title = "Correlation between Selected Features", x = "", y = "") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5, size = 8),
-        axis.text.y = element_text(size = 8))
-
-
-
-
-```
-
-```{r}
-# Identify factor columns with only one level
-# Convert all factor variables with only one level to character variables
-data_with_dummies <- data_with_dummies %>%
-  mutate(across(where(is.factor), ~ if(length(levels(.)) <= 1) as.character(.) else .))
-
-# Remove all character columns
-data_with_dummies <- data_with_dummies %>%
-  select(where(~ !is.character(.)))
-
-# Regression Analysis
-formula <- as.formula(paste("price ~ square_feet + bedrooms + bathrooms +", 
-                            paste(setdiff(names(data_with_dummies), "price"), collapse = " + ")))
-model <- lm(formula, data = data_with_dummies)
-
-# Output the summary of the regression
-summary(model)
-
-
-```
-
-```{r}
-
-# Residuals vs Fitted values plot
-ggplot(data = model, aes(x = .fitted, y = .resid)) +
-  geom_point(aes(color = .resid), alpha = 0.5) +
-  geom_smooth(se = FALSE, method = "loess", color = "red") +
-  theme_minimal() +
-  labs(title = "Residuals vs. Fitted",
-       x = "Fitted values",
-       y = "Residuals",
-       color = "Residual Value") +
-  theme(legend.position = "none")
-
-```
-```{r}
-# Predicting the prices using the model
-predicted_prices = predict(model, data_with_dummies)
-
-# Plotting the actual vs. predicted prices
-plot_data = data.frame(Actual = data_with_dummies$price, Predicted = predicted_prices)
-
-ggplot(plot_data, aes(x = Actual, y = Predicted)) +
-  geom_point(aes(color = abs(Actual - Predicted)), alpha = 0.5) +
-  geom_smooth(method = "lm", se = FALSE, color = "red") +
-  labs(title = "Actual vs. Predicted Prices", 
-       x = "Actual Prices", 
-       y = "Predicted Prices",
-       color = "Error") +
+ggplot(top_states, aes(x = reorder(state, price), y = price)) +
+  geom_bar(stat = "identity", fill = "lightgreen") +
+  geom_hline(yintercept = overall_avg_price, color = "red", linetype = "dashed") +
+  coord_flip() +  # Flip the coordinates for a horizontal bar chart
+  labs(title = "Top 10 States by Average Rental Price",
+       x = "State", y = "Average Rental Price") +
   theme_minimal()
 
 ```
+2. Listing Sources Analysis: How do rental prices differ based on the source of the listing (e.g., RentLingo, Zillow, etc.), and can we identify any specific trends associated with each source?
+
+a. Descriptive Statistics and Measures of Variance
+We'll compute the mean, median, variance, and standard deviation of rental prices for each listing source.
+
+b. Normality Test
+We'll employ the Shapiro-Wilk test to understand if the rental prices are normally distributed for each listing source.
+
+c. ANOVA Analysis
+If the data is normally distributed, we'll use ANOVA to determine if there are statistically significant differences in rental prices across listing sources.
+
+d. Visualization
+A bar chart will help visualize the average rental prices by listing source.
+
+
 ```{r}
-install.packages("lmtest")
-library(lmtest)
-durbinWatsonTest(model)
+
+# a. Descriptive Statistics and Measures of Variance
+source_grouped <- aggregate(price ~ source, data = apartments_data, FUN = mean)
+source_stats <- cbind(source_grouped, 
+                      median = tapply(apartments_data$price, apartments_data$source, median),
+                      variance = tapply(apartments_data$price, apartments_data$source, var),
+                      sd = tapply(apartments_data$price, apartments_data$source, sd))
+
+# b. Normality Test
+# Filtering and sampling for Shapiro-Wilk test
+shapiro_test_results <- lapply(split(apartments_data$price, apartments_data$source), function(x) {
+  sample_size <- length(x)
+  if(sample_size < 3) {
+    return(NA)
+  } else if(sample_size > 5000) {
+    x <- sample(x, 5000)  # Taking a random sample of 5000 data points
+  }
+  shapiro.test(x)$p.value
+})
+
+# Convert the results to a data frame for better visualization
+shapiro_df <- data.frame(source = names(shapiro_test_results), p_value = unlist(shapiro_test_results))
+
+# c. ANOVA Analysis
+anova_result <- aov(price ~ source, data = apartments_data)
+anova_summary <- summary(anova_result)
+
+# d. Visualization
+ggplot_plot <- ggplot(source_stats, aes(x = reorder(source, -price), y = price)) +
+  geom_bar(stat = "identity", fill = "dodgerblue") +
+  coord_flip() +
+  labs(title = "Average Rental Price by Source", x = "Listing Source", y = "Average Rental Price") +
+  theme_minimal() +
+  geom_errorbar(aes(ymin = price - sd, ymax = price + sd), width = 0.5)
+
+# Output the computed values and the ggplot object
+list(source_stats = source_stats, shapiro_test = shapiro_df, anova_summary = anova_summary, plot = ggplot_plot)
+
+
+
+
+
 
 
 ```
+
