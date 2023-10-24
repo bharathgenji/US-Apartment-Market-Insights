@@ -347,10 +347,6 @@ p + annotate("text", x = -70, y = 25, label = paste("Highest:", highest_state), 
 
 
 ```
-```{r}
-data
-```
-
 
 
 ```{r}
