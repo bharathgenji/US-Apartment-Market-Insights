@@ -65,15 +65,17 @@ In essence, the dataset offers a broad view of the US apartment rental market, b
 
 The genesis of this dataset is the UCI database, but the original data compilation was executed by "RentLingo", an online platform. This suggests a digital scraping or aggregation method, wherein listings from various sources might have been collated. It's essential to recognize the potential biases that might arise from such collection methods, such as over-representation of certain types of listings or geographies.
 
-## 4. Prior Analyses and Insights
+## 4. Previous Analyses and Findings
 
-The initial analysis was a multi-faceted approach. Beginning with data manipulation, the team curated the dataset to enhance its usability. Through rigorous Exploratory Data Analysis (EDA), patterns began to emerge, relationships between variables were identified, and the groundwork for more complex statistical inferences was laid. Preliminary models were built to understand the potential predictive capabilities of the dataset.
+Our initial approach to analyzing the dataset was multi-pronged. We started with data manipulation, refining the dataset for better clarity and utility. This preparatory phase set the stage for an in-depth Exploratory Data Analysis (EDA). Through EDA, we were able to discern patterns, pinpoint relationships between variables, and lay the foundation for subsequent analyses. The primary goal was to understand the dataset's nuances and its potential predictive capabilities, leading to the construction of preliminary models.
 
-An ANOVA test can be run to make sure the states column is truly signifigant and the grouping by states is warranted. The output of this ANOVA is below.
+One significant analysis involved examining the validity of grouping listings by the `states` column. To ascertain the statistical significance of this categorization, we conducted an ANOVA test. The results of this test are presented below:
 
-![Correlation Matrix](./ANOVA.png)
+![ANOVA Results](./ANOVA.png)
 
-A p-value of 2*10^(-16) means a grouping by state is heavily statistic, and a grouping by states can be helpful to add controls for inference.
+A strikingly low p-value of \(2 \times 10^{-16}\) confirms the statistical significance of state-based grouping. This outcome suggests that state categorization is not only valid but can also serve as a robust control mechanism when making inferences or building predictive models. Such findings underscore the importance of understanding and leveraging geographical nuances in the dataset.
+
+Additionally, a chi-squared test can be run on certain variables that are invariant over location such as photo availability and price. Is the price of the listing changed by the inclusion of a photo in the lisiting.
 
 ## 5. Research Contribution to Question Development
 
