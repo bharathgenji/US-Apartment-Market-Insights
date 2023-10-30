@@ -65,7 +65,7 @@ In essence, the dataset offers a broad view of the US apartment rental market, b
 
 The genesis of this dataset is the UCI database, but the original data compilation was executed by "RentLingo", an online platform. This suggests a digital scraping or aggregation method, wherein listings from various sources might have been collated. It's essential to recognize the potential biases that might arise from such collection methods, such as over-representation of certain types of listings or geographies.
 
-## 4. Previous Analyses and Findings
+## 4. Inital Analyses and Findings
 
 Our initial approach to analyzing the dataset was multi-pronged. We started with data manipulation, refining the dataset for better clarity and utility. This preparatory phase set the stage for an in-depth Exploratory Data Analysis (EDA). Through EDA, we were able to discern patterns, pinpoint relationships between variables, and lay the foundation for subsequent analyses. The primary goal was to understand the dataset's nuances and its potential predictive capabilities, leading to the construction of preliminary models.
 
@@ -75,7 +75,9 @@ One significant analysis involved examining the validity of grouping listings by
 
 A strikingly low p-value of \(2 \times 10^{-16}\) confirms the statistical significance of state-based grouping. This outcome suggests that state categorization is not only valid but can also serve as a robust control mechanism when making inferences or building predictive models. Such findings underscore the importance of understanding and leveraging geographical nuances in the dataset.
 
-Additionally, a chi-squared test can be run on certain variables that are invariant over location such as photo availability and price. Is the price of the listing changed by the inclusion of a photo in the lisiting.
+Additionally, a chi-squared test can be run on certain variables that are invariant over location such as photo availability and price. Is the price of the listing changed by the inclusion of a photo in the listing. The results of this chi-squared test are shown below that there is a lack of difference in the does and does not have photo in the listing.
+
+![Chi-squared Results](./chi-squared test result.png)
 
 ## 5. Research Contribution to Question Development
 
