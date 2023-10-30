@@ -81,7 +81,22 @@ Additionally, a chi-squared test can be run on certain variables that are invari
 
 ## 5. Research Contribution to Question Development
 
-The extensive nature of the dataset and its intricate details spurred numerous questions. Initial hypotheses revolved around understanding the primary drivers of rental prices and discerning patterns in rental listings across various geographies. As research deepened, the focus shifted towards the impact of amenities on pricing and the role of apartment size in influencing rental rates.
+Before crafting the SMART questions, it was essential to determine the narrative we wanted the data to convey. Initial research revealed the complexities of the US apartment rental market, influenced by variables like location and local amenities.
+
+With this understanding, we began formulating questions. For instance, does an apartment's proximity to city centers influence its rental price? Or, are larger apartments more expensive in some states compared to others? These questions aimed to uncover the dataset's implications within the broader real estate context.
+
+Further exploration of the dataset, especially its geospatial information, led to more refined questions. A notable pattern was the variation in rental prices across states. This observation prompted deeper inquiries, such as the statistical significance of these state-based differences, leading to the ANOVA test.
+
+In essence, our approach was iterative. As we delved deeper into the data and its nuances, our questions evolved, ensuring they remained relevant to the rental market's realities.
+
+A key dimension of our dataset is the average square footage of apartments across various states. This measure paints a vivid picture of the typical living spaces renters might encounter in different parts of the US. By comparing individual state averages with a weighted national average, we gain insights into regional variations. The following chart clearly delineates the average square footage by state, providing a comprehensive view of how each state compares to the national benchmark:
+
+![Average Square Footage by State](./Avg_price_sqft_state.jpeg)
+
+Interestingly the vast majority of states are below this average, and this is because of the massive skew caused by the California housing market. It is simply egregious and this skew can be visually shown in a graph. Other markets such as MA and HI have similarly priced markets but the size itself is the concern here, as it is the third highest quantity of all 50 states.
+
+![Average Price by State](./Plot of average.png)
+
 
 ## 6. Beneficial Augmentations to the Dataset
 
