@@ -97,6 +97,14 @@ Interestingly the vast majority of states are below this average, and this is be
 
 ![Average Price by State](./Plot of average.png)
 
+Deeper into this a regression of sq_ft ~ price for TX, CA, and NY can be taken to show the `Locational Premium` or the amount of price determined by the location as opposed to the square footage. 
+
+<div style="display: flex; justify-content: space-between;">
+  <img src="sqft ~ price CA.jpeg" width="45%" />
+  <img src="sqft ~ price TX.jpeg" width="45%" />
+</div>
+
+Comparing the slopes of CA and TX their slopes are somewhat similar, but the skew of the data itself is immensely different.It is clearly shows the skew of the CA market contrasted against a more affordable market such as TX every value has been thrown to the right of the graph. The clustering in Texas much more closely follows the weighted square average calculated earlier.
 
 ## 6. Beneficial Augmentations to the Dataset
 
