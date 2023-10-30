@@ -24,7 +24,7 @@ The dataset serves as a window into the apartment rental landscape in the USA. I
 
 Sourced from the UCI database and enriched with listings from "RentLingo", the dataset comprises 10,000 observations. Each observation represents a unique rental listing, providing a robust foundation for our analysis. Cleaning the data is mandatory for imported datasets and this is no exception. Below is the dataset overview and tables of variable definitions, with missing values shown to display the amount of rows omitted.
 
-![Summary Statistics of Dataset](C:/Users/Zac/Desktop/Fall 2023 Semester/Introduction to Data Science/Project/Summary stats of dataset.png)
+![Summary Statistics of Dataset](./Summary stats of dataset.png)
 
 ### 1.2 Attributes and Data Dimensions
 
@@ -38,7 +38,8 @@ The dataset's richness lies in its 22 meticulously curated columns. Each attribu
 
 To understand the relationships between these attributes, especially the numerical ones, a correlation matrix can be invaluable:
 
-![Correlation Matrix](C:/Users/Zac/Desktop/Fall 2023 Semester/Introduction to Data Science/Project/Correllation Matrix.png)
+![Correlation Matrix](./Correllation Matrix.png)
+
 
 This matrix provides a visual representation of how different variables in the dataset relate to each other. Strong correlations, whether positive or negative, can hint at underlying patterns and relationships that might be pivotal in subsequent analyses.
 
@@ -58,7 +59,7 @@ However, as with any dataset, it's essential to recognize both its strengths and
   - **Potential for Bias**: States with sparse data are susceptible to skewed insights, where outlier listings can disproportionately influence results.
   - **Period Limitations**: The dataset captures listings from September to December, preventing a comprehensive seasonal analysis and potentially missing trends evident in other months.
 
-In essence, the dataset offers a broad view of the US apartment rental market, but its limitations, especially concerning state-level analyses and seasonal trends, must be considered to ensure accurate and meaningful conclusions.
+In essence, the dataset offers a broad view of the US apartment rental market, but its limitations, especially concerning state-level analyses and seasonal trends, must be considered to ensure accurate and meaningful conclusions. 
 
 ## 3. How was the information gathered?
 
@@ -67,6 +68,12 @@ The genesis of this dataset is the UCI database, but the original data compilati
 ## 4. Prior Analyses and Insights
 
 The initial analysis was a multi-faceted approach. Beginning with data manipulation, the team curated the dataset to enhance its usability. Through rigorous Exploratory Data Analysis (EDA), patterns began to emerge, relationships between variables were identified, and the groundwork for more complex statistical inferences was laid. Preliminary models were built to understand the potential predictive capabilities of the dataset.
+
+An ANOVA test can be run to make sure the states column is truly signifigant and the grouping by states is warranted. The output of this ANOVA is below.
+
+![Correlation Matrix](./ANOVA.png)
+
+A p-value of 2*10^(-16) means a grouping by state is heavily statistic, and a grouping by states can be helpful to add controls for inference.
 
 ## 5. Research Contribution to Question Development
 
