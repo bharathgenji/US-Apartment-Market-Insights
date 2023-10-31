@@ -18,7 +18,7 @@ Our primary goal is straightforward: to analyze the dataset, understand its intr
 
 ## 1. What do we know about this dataset?
 
-The dataset serves as a window into the apartment rental landscape in the USA. It provides an amalgamation of attributes that paint a comprehensive picture of rental listings. Let's delve deeper into its characteristics:
+The dataset offers a detailed look at the apartment rental market in the USA. It combines various attributes, giving us both quantitative and qualitative insights into rental listings. Here, we'll explore these characteristics to better understand the information at hand.
 
 ### 1.1 Data Source and Observations
 
