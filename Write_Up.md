@@ -127,4 +127,27 @@ In essence, while the existing dataset serves as a solid foundation for understa
 
 ## 7. Evolution of the Research Question Post-EDA
 
-The beauty of EDA is its ability to mold and refine the research direction. While the foundational questions around rental drivers remained, the nuances changed. The emphasis shifted towards a more granular understanding, such as the role of specific amenities in price determination or the impact of apartment location vis-
+Exploratory Data Analysis (EDA) is a dynamic process that allows researchers to dive deep into datasets, uncovering patterns, relationships, and insights that might not be immediately evident. This iterative exploration often results in the evolution and refinement of the research questions. Here's how our research questions evolved post-EDA:
+
+### 7.1 Deepened Understanding of Variable Interactions
+
+Our initial questions were primarily centered around the direct relationships between individual variables. However, post-EDA, it became evident that many of these variables interact in complex ways. For instance, the relationship between rental price and amenities isn't linear but may vary based on location, apartment size, or even the season. This nuanced understanding prompted us to reframe our questions to account for these multifaceted interactions.
+
+### 7.2 Emphasis on Geographic Trends
+
+The EDA revealed significant geographic disparities in the dataset, especially concerning rental prices and apartment sizes across different states. This led to a heightened focus on state-specific analyses, with questions tailored to understand the unique rental landscapes of individual states. Queries that initially looked at the US rental market holistically were now complemented by state-centric questions to capture regional nuances.
+
+### 7.3 Incorporation of Qualitative Insights
+
+While our initial questions were predominantly quantitative, the EDA emphasized the importance of qualitative descriptors in the dataset, such as the body and amenities columns. This led to the formulation of questions that sought to understand the perceived value of listings, the narrative appeal, and how qualitative factors influence rental decisions.
+
+### 7.4 Broader Temporal Perspective
+
+The dataset's limitation to the months of September to December initially restricted our temporal analyses. However, post-EDA, we recognized the potential insights that could be gleaned from a year-round perspective, leading to questions about seasonal trends, monthly fluctuations, and the potential impact of major events on rental patterns.
+
+### 7.5 Focus on Potential Biases and Data Limitations
+
+The EDA process highlighted potential biases in the dataset, especially concerning the collection method and the over-representation or under-representation of certain types of listings. This prompted questions about the validity of certain insights, the potential for skewed results, and the need for data augmentation to address these biases.
+
+In conclusion, the EDA process was instrumental in refining our research direction. It allowed us to pivot from broader, more general questions to specific, nuanced queries that truly capture the complexities of the US apartment rental market. As we move forward, these refined questions will guide our analyses, ensuring that our conclusions are both robust and relevant.
+
