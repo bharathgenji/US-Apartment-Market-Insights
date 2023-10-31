@@ -108,10 +108,22 @@ Comparing the slopes of CA and TX their slopes are somewhat similar, but the ske
 
 ## 6. Beneficial Augmentations to the Dataset
 
-To truly harness the potential of this dataset, a few additions would be invaluable:
-- **Historical Data**: Capturing rental trends over a span of years would offer insights into market evolution.
-- **Detailed Amenities Data**: A clearer breakdown of amenities could help in understanding their precise impact on pricing.
-- **Feedback/Reviews Data**: Tenant feedback or reviews could provide a qualitative perspective on rental listings.
+While the current dataset provides a valuable snapshot of the US apartment rental market, several enhancements can bolster its analytical and predictive capabilities. Incorporating these additions would enable a more robust and nuanced understanding of rental dynamics, catering to various stakeholders in the rental ecosystem.
+
+### 6.1 Year-Round Data
+
+The present dataset captures listings from September to December, offering a limited temporal perspective. A comprehensive year-round dataset would provide insights into how rental trends fluctuate across different seasons. Such information is invaluable for understanding seasonal demand patterns, rental pricing variations, and tenant mobility trends. For example, are there specific months where rentals spike due to student movements or major cultural events? Do certain seasons see a dip in rentals due to climatic challenges? Addressing these questions requires a dataset that spans the entire calendar year.
+
+### 6.2 Enhanced State-Level Observations
+
+One of the challenges faced in our analysis was the limited number of observations for several states, which hindered robust state-level analyses. Ensuring that each state has a statistically significant number of observations would provide a more balanced and accurate representation of regional rental trends. This would enable state-specific insights, allowing for tailored strategies and interventions for different regions.
+
+### 6.3 Non-Bundled Amenities Data
+
+The current dataset provides information on amenities, but there's an opportunity to delve deeper. Listings often bundle multiple amenities together, making it challenging to discern the individual value and appeal of each amenity. A dataset that itemizes non-bundled amenities—listing them separately for each property—would allow for a more granular analysis. For instance, how much value does a gym add compared to a swimming pool? Is a pet-friendly policy more attractive in urban settings compared to suburban ones? By isolating amenities, we can derive more precise insights into their individual impact on rental prices and tenant preferences.
+
+In essence, while the existing dataset serves as a solid foundation for understanding the rental market, these proposed augmentations would significantly enhance its depth and breadth. Such enhancements would ensure that the dataset not only reflects the current rental landscape but also anticipates future trends and challenges.
+
 
 ## 7. Evolution of the Research Question Post-EDA
 
