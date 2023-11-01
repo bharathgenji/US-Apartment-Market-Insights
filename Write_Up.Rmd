@@ -62,6 +62,7 @@ In our initial analysis phase, we identified two distinct categories within the 
 As our analysis progressed, the variant factors, particularly those related to geographic location, came into sharper focus. We observed noticeable differences in rental prices across states, leading us to craft state-specific questions. For example, we explored whether an apartment's proximity to city centers or its size influenced its rental price differently in various states.
 
 This structured approach allowed us to dissect the data methodically, beginning with universal trends and then zooming in on location-based nuances.
+
 ### Chi-Squared Results
 
 Test 1: Relationship between Photo Availability and Price Type
