@@ -98,6 +98,10 @@ In addressing Question 9, we determined the average rental price per square foot
 
 ``` {r , echo = FALSE, message=FALSE, warning=FALSE,out.width='100%', fig.align='center'}
 
+###############################################################################
+### SMART Question 9
+###############################################################################
+
 # here we have two checks to make sure that the packages are loaded and installed
 if (!require(readxl)) {
   install.packages("readxl")
@@ -154,6 +158,7 @@ statewise_stats$weighted_avg_price_per_sqft <- statewise_stats$avg_price_per_sqf
 # Compute the overall weighted average rental price per square foot for the entire dataset
 overall_weighted_avg_price_per_sqft <- sum(statewise_stats$weighted_avg_price_per_sqft) / sum(statewise_stats$count)
 
+# install the package if necessary, and load it in
 if (!require(ggplot2)) {
   install.packages("ggplot2")
 }
@@ -185,20 +190,128 @@ bubble_plot
 
 Interestingly the vast majority of states are below this average, and this is because of the massive skew caused by the California housing market. It is simply egregious and this skew can be visually shown in a graph. Other markets such as MA and HI have similarly priced markets but the size itself is the concern here, as it is the third highest quantity of all 50 states.
 
+<!-- This needs to be inset -->
 ![Average Price by State](./Plot of average.png)
 
 Deeper into this a regression of sq_ft ~ price for TX, CA, and NY can be taken to show the `Locational Premium` or the amount of price determined by the location as opposed to the square footage. 
+
+<!--
 
 <div style="display: flex; justify-content: space-between;">
   <img src="sqft ~ price CA.jpeg" width="45%" />
   <img src="sqft ~ price TX.jpeg" width="45%" />
 </div>
 
+-->
+
+``` {r , echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=4}
+
+###############################################################################
+### SMART Question 10
+###############################################################################
+
+# Load necessary packages
+if (!require(dplyr)) {
+  install.packages("dplyr")
+}
+library(dplyr)
+
+if (!require(purrr)) {
+  install.packages("purrr")
+}
+library(purrr)
+
+if (!require(tidyr)) {
+  install.packages("tidyr")
+}
+library(tidyr)
+
+if (!require(ggplot2)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+# Remove outliers
+remove_outliers <- function(data, column_name) {
+  Q1 <- quantile(data[[column_name]], 0.25, na.rm = TRUE)
+  Q3 <- quantile(data[[column_name]], 0.75, na.rm = TRUE)
+  IQR <- Q3 - Q1
+  
+  filter_condition <- (data[[column_name]] >= (Q1 - 1.5 * IQR)) & (data[[column_name]] <= (Q3 + 1.5 * IQR))
+  return(data[filter_condition,])
+}
+
+filtered_df_no_outliers <- remove_outliers(filtered_df_with_dc, "price")
+filtered_df_no_outliers <- remove_outliers(filtered_df_no_outliers, "square_feet")
+
+# Group the data by state and apply the linear regression model to each group, with square_feet as the predictor and price as the response
+regression_results <- filtered_df_no_outliers %>%
+  group_by(state) %>%
+  nest() %>%
+  mutate(
+    model = map(data, ~ lm(price ~ square_feet, data = .)),
+    intercept = map_dbl(model, ~ coef(.)[1]),
+    slope = map_dbl(model, ~ coef(.)[2]),
+    r_squared = map_dbl(model, ~ summary(.)$r.squared)
+  ) %>%
+  select(state, intercept, slope, r_squared)
+
+# Display the regression results by state
+#print(regression_results)
+
+plot_width <- 5
+plot_height <- 3
+
+# As an example, visualize the regression line for the states CA, NY, and TX
+selected_states <- c("CA", "NY", "TX")
+plots <- list()
+
+for (state in selected_states) {
+  state_data <- filter(filtered_df_no_outliers, state == !!state)
+  
+  plot <- ggplot(state_data, aes(x = square_feet, y = price)) +
+    geom_point(alpha = 0.5) +
+    geom_smooth(method = "lm", color = "red") +
+    labs(
+      title = paste0("Regression of Price on Square Feet in ", state),
+      x = "Square Feet",
+      y = "Rental Price ($)"
+    ) +
+    theme_minimal()
+  
+  plots[[state]] <- plot
+}
+
+# Display the plots for the selected states
+#lapply(plots, print)
+
+
+# Filter for the states CA, NY, and TX and select the slope column
+#selected_slopes <- regression_results %>%
+#  filter(state %in% selected_states) %>%
+#  select(slope)
+
+# install the package if necessary, and load it in
+if (!require(gridExtra)) {
+  install.packages("gridExtra")
+}
+library(gridExtra)
+
+
+# Assuming plots for CA and TX are stored in plots[["CA"]] and plots[["TX"]] respectively
+grid.arrange(plots[["CA"]], plots[["TX"]], ncol=2)
+
+```
+
 Comparing the slopes of CA and TX their slopes are somewhat similar, but the skew of the data itself is immensely different.It is clearly shows the skew of the CA market contrasted against a more affordable market such as with Texas every value has been thrown to the right of the graph. The clustering in Texas much more closely follows the weighted square average calculated earlier.
 
 Finally, we have New York, which seems to have the locational premium makeup the majority of the price of listings. It possesses a negative slope, with ordered pairs of square_foot and price being distributed over the entirety of the graph. This suggests that the housing market of New York is not overly reliant on square footage to determine price but instead on the location of the dwelling itself.
 
-![New York Locational Premium](./sqft~ price NY.jpeg)
+<!-- ![New York Locational Premium](./sqft~ price NY.jpeg) -->
+
+``` {r , echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=4}
+print(plots[["NY"]])
+```
 
 To further substantiate our findings, we referred to the graph depicting the average square footage by state (see attached JPEG). The visual representation corroborates our analysis, showing New York leading the pack with the highest average square footage, followed closely by California and then Texas. This pattern aligns with our earlier observation that in areas where rent is less influenced by square footage, the average square footage tends to be higher. Specifically, in New York, where the locational premium seems to dominate rental pricing, dwellings offer more spacious interiors on average compared to other states.
 
