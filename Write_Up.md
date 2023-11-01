@@ -79,6 +79,33 @@ Additionally, a chi-squared test can be run on certain variables that are invari
 
 ![Chi-squared Results](./chi-squared test result.png)
 
+## Chi-Squared Results
+
+Question 1: Relationship between Photo Availability and Price Type
+
+We examine how the availability of photos in a listing correlates with the way rental prices are presented. 
+In this stacked bar chart, we can see that there are noticeable differences in photo availability across various price types.
+
+![Chi-Squared Results 1](Chi-Squared Results 1_Relationship between Photo Availability and Price Type.jpeg)
+
+Question 2: Distribution of Listings Across States
+
+We also take a look at the geographical distribution of apartment listings across the United States. 
+In this visualization, each bar represents a state, and the height of the bar correlates with the number of listings in that state.
+There are clear trends visible, with certain states showing a much higher number of listings, such as California and Texas.This uneven distribution indicates potential market hotspots and areas that may require more attention or resources to boost listing numbers.
+
+![Chi-Squared Results 2](Chi-Squared Results 2_Distribution of Listings Across States.jpeg)
+
+Question 3: Association Between Pets Allowed Status and Rent Prices
+
+We also Investigate the association between "pets allowed" status and different rent price ranges, by using Chi-square test on the contingency table of "pets allowed" status and rent price categories.
+We categorized the rental prices into three ranges: Low, Medium, and High.
+A Chi-square test was conducted on a contingency table, comprising these price ranges and the pets allowed status. 
+The results were quite telling, with a Chi-square value of 292.76, and an extremely low p-value, practically zero. 
+This leads us to reject the null hypothesis, concluding a significant association between the pets allowed status and the rental price ranges. 
+
+![Chi-Squared Results 3](Chi-Squared Results 3_Pets Allowed vs. Price Range.jpeg)
+
 ## 5. Research Contribution to Question Development
 
 Before crafting the SMART questions, it was essential to determine the narrative we wanted the data to convey. Initial research revealed the complexities of the US apartment rental market, influenced by variables like location and local amenities.
