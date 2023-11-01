@@ -40,7 +40,6 @@ To understand the relationships between these attributes, especially the numeric
 
 ![Correlation Matrix](./Correllation Matrix.png)
 
-
 This matrix provides a visual representation of how different variables in the dataset relate to each other. Strong correlations, whether positive or negative, can hint at underlying patterns and relationships that might be pivotal in subsequent analyses.
 
 ### 1.3 Dataset's Relevance, Potential, and Limitations
@@ -63,7 +62,7 @@ In essence, the dataset offers a broad view of the US apartment rental market, b
 
 ## 3. How was the information gathered?
 
-The genesis of this dataset is the UCI database, but the original data compilation was executed by "RentLingo", an online platform. This suggests a digital scraping or aggregation method, wherein listings from various sources might have been collated. It's essential to recognize the potential biases that might arise from such collection methods, such as over-representation of certain types of listings or geographies.
+The origin of this dataset is the UCI database, but the original data compilation was executed by "RentLingo", an online platform. This suggests a digital scraping or aggregation method, wherein listings from various sources might have been collated. It's essential to recognize the potential biases that might arise from such collection methods, such as over-representation of certain types of listings or geographies.
 
 ## 4. Inital Analyses and Findings
 
@@ -104,7 +103,7 @@ Deeper into this a regression of sq_ft ~ price for TX, CA, and NY can be taken t
   <img src="sqft ~ price TX.jpeg" width="45%" />
 </div>
 
-Comparing the slopes of CA and TX their slopes are somewhat similar, but the skew of the data itself is immensely different.It is clearly shows the skew of the CA market contrasted against a more affordable market such as TX every value has been thrown to the right of the graph. The clustering in Texas much more closely follows the weighted square average calculated earlier.
+Comparing the slopes of CA and TX their slopes are somewhat similar, but the skew of the data itself is immensely different.It is clearly shows the skew of the CA market contrasted against a more affordable market such as with Texas every value has been thrown to the right of the graph. The clustering in Texas much more closely follows the weighted square average calculated earlier.
 
 ## 6. Beneficial Augmentations to the Dataset
 
