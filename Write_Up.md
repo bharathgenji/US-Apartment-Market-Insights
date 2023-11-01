@@ -8,6 +8,8 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+CHANGE HERE
+
 ## Introduction
 
 The rental market is a significant component of the US economy, influencing and being influenced by various economic and societal factors. With the continuous growth in data availability, there's an opportunity to derive insights from data to better understand this market. 
