@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <!--- Rmarkdown for the paper. --->
 <!--- Zachary Perry group 5 I think --->
 
@@ -9,57 +8,37 @@ date: "`r Sys.Date()`"
 output: html_document
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
 ## Introduction
 
-The rental market is a significant component of the US economy, influencing and being influenced by various economic and societal factors. With the continuous growth in data availability, there's an opportunity to derive insights from data to better understand this market. 
+The U.S. rental market plays a crucial role in the economy, being influenced by a range of socio-economic factors. With more data now available, we have a chance to gain deeper insights into this market.
 
-In this study, we explore a dataset detailing apartment rentals in the USA, sourced from the UCI database and supplemented with listings from "RentLingo". Comprising 10,000 observations across 22 variables, this dataset provides a comprehensive look into factors like pricing, amenities, location, and more.
-
-Our primary goal is straightforward: to analyze the dataset, understand its intricacies, and derive actionable insights that could be beneficial for stakeholders in the rental market. This report summarizes our approach, findings, and the potential implications of those findings.
+In this report, we examine a dataset of 10,000 U.S. apartment rentals from the UCI database, enhanced with "RentLingo" listings. We focus on key attributes like location, square footage, and amenities, giving us a broad view of the rental scene.
 
 ## 1. What do we know about this dataset?
 
-The dataset offers a detailed look at the apartment rental market in the USA. It combines various attributes, giving us both quantitative and qualitative insights into rental listings. Here, we'll explore these characteristics to better understand the information at hand.
+The dataset provides a comprehensive view of the U.S. apartment rental landscape, capturing key attributes of rental listings. Among the most informative variables, we have location data, which includes attributes like state and city, pinpointing the geographical context of each listing. Additionally, there are physical characteristics that reveal details such as square footage, indicating the size and layout of the apartment. We also have amenities, a qualitative descriptor that highlights the additional features or services that come with each rental.
 
 ### 1.1 Data Source and Observations
 
-Sourced from the UCI database and enriched with listings from "RentLingo", the dataset comprises 10,000 observations. Each observation represents a unique rental listing, providing a robust foundation for our analysis. Cleaning the data is mandatory for imported datasets and this is no exception. Below is the dataset overview and tables of variable definitions, with missing values shown to display the amount of rows omitted.
+The dataset, sourced from the UCI database, consists of 10,000 observations. Each entry represents a unique rental listing, forming a solid foundation for our analysis. As with many externally acquired datasets, cleaning the data was an essential step to ensure its quality and reliability. What follows is an overview of the dataset, showcasing variable definitions and pinpointing any missing values, which offers clarity regarding our analytical scope.
 
+<!-- % The code to generate this needs to be inset -->
 ![Summary Statistics of Dataset](./Summary stats of dataset.png)
 
 ### 1.2 Attributes and Data Dimensions
 
-The dataset's richness lies in its 22 meticulously curated columns. Each attribute captures a specific facet of rental listings, and understanding these can pave the way for more in-depth analyses:
-
-- **Identifiers**: Columns like `id` and `title` uniquely distinguish each listing, ensuring data integrity and facilitating easier referencing.
-- **Geographical Details**: With attributes such as `cityname`, `state`, `latitude`, and `longitude`, the dataset provides a granular view of the geographical spread of listings. This can be pivotal in understanding regional rental trends.
-- **Economic Indicators**: The `price_display` column is more than just a price tag; it's a reflection of various influencing factors, from location to amenities and apartment size.
-- **Physical Characteristics**: By detailing the number of `bedrooms`, `bathrooms`, and the `square_feet` area, the dataset allows for analyses based on apartment size and structure.
-- **Qualitative Descriptors**: The `body` and `amenities` columns add depth, offering a narrative and a list of extras that come with each listing. This qualitative data can be crucial when trying to understand the perceived value of a listing.
+The dataset captures several key attributes of rental listings. The state indicates the geographical location of the listing, which aids in regional trend analysis. The size of the property is denoted by square_feet, a primary influencer of the rental price. Rental prices are reflected in the price_display. Information about the apartment's structure is provided through bedrooms and bathrooms. Additionally, the amenities column lists the extra features or facilities associated with the property. These variables, among others, allow for a thorough exploration of the US rental market landscape.
 
 To understand the relationships between these attributes, especially the numerical ones, a correlation matrix can be invaluable:
 
+<!-- % Need the inset code to create the correllation matrix -->
 ![Correlation Matrix](./Correllation Matrix.png)
 
 This matrix provides a visual representation of how different variables in the dataset relate to each other. Strong correlations, whether positive or negative, can hint at underlying patterns and relationships that might be pivotal in subsequent analyses.
-
-### 1.3 Dataset's Relevance, Potential, and Limitations
-
-The dataset, with its diverse attributes, serves as a valuable resource for understanding the broader dynamics of the US apartment rental market. Its coverage of different geographical areas, apartment sizes, and amenities allows for a variety of analyses, from trend spotting to predictive modeling. 
-
-However, as with any dataset, it's essential to recognize both its strengths and limitations:
-
-- **Strengths**:
-  - **Comprehensive Attributes**: The dataset's columns offer insights ranging from basic listing details to more nuanced aspects like amenities and geospatial information.
-  - **Broad Coverage**: With 10,000 observations, it provides a substantial snapshot of the US apartment rental landscape.
-
-- **Limitations**:
-  - **State-Level Analyses**: Upon breaking down the dataset by states, many states appear to lack a sufficient number of observations, challenging the derivation of robust statistical inferences at the state level.
-  - **Reduced Statistical Power**: With limited observations for several states, our ability to detect genuine patterns or trends is hampered, potentially missing out on genuine insights for those states.
-  - **Potential for Bias**: States with sparse data are susceptible to skewed insights, where outlier listings can disproportionately influence results.
-  - **Period Limitations**: The dataset captures listings from September to December, preventing a comprehensive seasonal analysis and potentially missing trends evident in other months.
-
-In essence, the dataset offers a broad view of the US apartment rental market, but its limitations, especially concerning state-level analyses and seasonal trends, must be considered to ensure accurate and meaningful conclusions. 
 
 ## 3. How was the information gathered?
 
@@ -67,18 +46,22 @@ The origin of this dataset is the UCI database, but the original data compilatio
 
 ## 4. Inital Analyses and Findings
 
-Our initial approach to analyzing the dataset was multi-pronged. We started with data manipulation, refining the dataset for better clarity and utility. This preparatory phase set the stage for an in-depth Exploratory Data Analysis (EDA). Through EDA, we were able to discern patterns, pinpoint relationships between variables, and lay the foundation for subsequent analyses. The primary goal was to understand the dataset's nuances and its potential predictive capabilities, leading to the construction of preliminary models.
+Diving into the dataset, we first focused on data refinement, ensuring its clarity and usability. This step was crucial in setting up a comprehensive Exploratory Data Analysis (EDA). During EDA, we identified key patterns and relationships between various attributes. Our main objective was to grasp the dataset's depth and its potential for predictive modeling.
 
-One significant analysis involved examining the validity of grouping listings by the `states` column. To ascertain the statistical significance of this categorization, we conducted an ANOVA test. The results of this test are presented below:
+An important aspect of our analysis was to assess the significance of using the states column to group listings, as the real estate market is extremely localized. To validate this approach, we used an ANOVA test, the results of which are shared in the subsequent section.
 
+<!-- % Need the inset code for this section -->
 ![ANOVA Results](./ANOVA.png)
 
-A strikingly low p-value of \(2 \times 10^{-16}\) confirms the statistical significance of state-based grouping. This outcome suggests that state categorization is not only valid but can also serve as a robust control mechanism when making inferences or building predictive models. Such findings underscore the importance of understanding and leveraging geographical nuances in the dataset.
+A strikingly low p-value of \(2 \times 10^{-16}\)  robustly attests to the significance of grouping listings by state. This result indicates that not only is state-based categorization valid, but it's also a potent tool for drawing accurate conclusions and shaping predictive models. This insight reinforces the value of considering regional variations within the dataset.
 
-Additionally, a chi-squared test can be run on certain variables that are invariant over location such as photo availability and price. Is the price of the listing changed by the inclusion of a photo in the listing. The results of this chi-squared test are shown below that there is a lack of difference in the does and does not have photo in the listing.
+## 5. Research Contribution to Question Development
 
-![Chi-squared Results](./chi-squared test result.png)
+In our initial analysis phase, we identified two distinct categories within the data: invariant and variant factors. We first turned our attention to the invariant factors, such as the impact of photo availability on rental prices. These factors provided insights that were consistent regardless of location.
 
+As our analysis progressed, the variant factors, particularly those related to geographic location, came into sharper focus. We observed noticeable differences in rental prices across states, leading us to craft state-specific questions. For example, we explored whether an apartment's proximity to city centers or its size influenced its rental price differently in various states.
+
+This structured approach allowed us to dissect the data methodically, beginning with universal trends and then zooming in on location-based nuances.
 ## Chi-Squared Results
 
 Question 1: Relationship between Photo Availability and Price Type
@@ -106,19 +89,99 @@ This leads us to reject the null hypothesis, concluding a significant associatio
 
 ![Chi-Squared Results 3](Chi-Squared Results 3_Pets Allowed vs. Price Range.jpeg)
 
-## 5. Research Contribution to Question Development
+SMART Question 9: What is the average rental price per square foot for apartments in different states within the dataset, and how do these prices compare to the overall dataset average?
 
-Before crafting the SMART questions, it was essential to determine the narrative we wanted the data to convey. Initial research revealed the complexities of the US apartment rental market, influenced by variables like location and local amenities.
+In addressing Question 9, we determined the average rental price per square foot for apartments in various states. This measure offers insights into the typical costs renters might face based on apartment size across different regions. When juxtaposing these state-specific averages against the overall dataset average, we observed distinctive regional pricing trends. The ensuing chart details these discrepancies, displaying how each state's average price per square foot relates to the national average:
 
-With this understanding, we began formulating questions. For instance, does an apartment's proximity to city centers influence its rental price? Or, are larger apartments more expensive in some states compared to others? These questions aimed to uncover the dataset's implications within the broader real estate context.
+<!-- Zac needs to inset the code here. -->
+<!-- ![Average Square Footage by State](./Avg_price_sqft_state.jpeg) -->
 
-Further exploration of the dataset, especially its geospatial information, led to more refined questions. A notable pattern was the variation in rental prices across states. This observation prompted deeper inquiries, such as the statistical significance of these state-based differences, leading to the ANOVA test.
+``` {r setup, echo = FALSE}
 
-In essence, our approach was iterative. As we delved deeper into the data and its nuances, our questions evolved, ensuring they remained relevant to the rental market's realities.
+# here we have two checks to make sure that the packages are loaded and installed
+#if (!require(readxl)) {
+#  install.packages("readxl")
+#}
+library(readxl)
 
-A key dimension of our dataset is the average square footage of apartments across various states. This measure paints a vivid picture of the typical living spaces renters might encounter in different parts of the US. By comparing individual state averages with a weighted national average, we gain insights into regional variations. The following chart clearly delineates the average square footage by state, providing a comprehensive view of how each state compares to the national benchmark:
+#if (!require(knitr)) {
+#  install.packages("knitr")
+#}
+library(knitr)
 
-![Average Square Footage by State](./Avg_price_sqft_state.jpeg)
+#if (!require(dplyr)) {
+#  install.packages("dplyr")
+#}
+library(dplyr)
+
+# Read the Excel file
+df <- read_excel("cleaned_data.xlsx")
+
+# List of valid US state abbreviations
+valid_states <- c(
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"
+)
+
+# Update the list of valid US state abbreviations to include DC
+valid_states <- c(valid_states, "DC")
+
+# Filter out rows where the state is not in the list of valid states
+filtered_df_with_dc <- df[df$state %in% valid_states, ]
+
+# Convert square_feet to numeric, setting any non-numeric values to NA
+filtered_df_with_dc$square_feet <- as.numeric(as.character(filtered_df_with_dc$square_feet))
+
+# Check for any non-numeric values that might have been converted to NAs
+na_square_feet_count <- sum(is.na(filtered_df_with_dc$square_feet))
+cat("Number of NA values in square_feet:", na_square_feet_count, "\n")
+
+# Compute the average rental price per square foot and the count of observations for each state
+statewise_stats <- filtered_df_with_dc %>%
+  filter(!is.na(square_feet) & square_feet > 0) %>%
+  group_by(state) %>%
+  summarize(
+    avg_price_per_sqft = round(mean(price / square_feet, na.rm = TRUE), 2),
+    count = n()
+  )
+
+# Compute the weighted average rental price per square foot for each state
+statewise_stats$weighted_avg_price_per_sqft <- statewise_stats$avg_price_per_sqft * statewise_stats$count
+
+# Compute the overall weighted average rental price per square foot for the entire dataset
+overall_weighted_avg_price_per_sqft <- sum(statewise_stats$weighted_avg_price_per_sqft) / sum(statewise_stats$count)
+
+#if (!require(ggplot2)) {
+#  install.packages("ggplot2")
+#}
+library(ggplot2)
+
+# Create a bubble plot with adjusted red line label and legend position
+bubble_plot <- ggplot(statewise_stats, aes(x = state, y = avg_price_per_sqft, size = count)) +
+  geom_point(alpha = 0.7, color = "dodgerblue") +
+  geom_hline(yintercept = overall_weighted_avg_price_per_sqft, color = "red", linetype="dashed", size=0.7) +
+  annotate("text", x = max(statewise_stats$state), y = overall_weighted_avg_price_per_sqft + 0.1, 
+           label = paste0("$", round(overall_weighted_avg_price_per_sqft, 2)), color = "red", hjust = "right") +
+  labs(
+    title = "Weighted Average Rental Price Per Square Foot by State",
+    subtitle = paste0("Overall avg. price/sqft: $", round(overall_weighted_avg_price_per_sqft, 2)),
+    x = "State",
+    y = "Price ($/sqft)",
+    size = "Number of Listings"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels by 45 degrees
+    legend.position = "top"  # Move the legend to the top
+  )
+
+# Display the plot
+bubble_plot
+
+```
 
 Interestingly the vast majority of states are below this average, and this is because of the massive skew caused by the California housing market. It is simply egregious and this skew can be visually shown in a graph. Other markets such as MA and HI have similarly priced markets but the size itself is the concern here, as it is the third highest quantity of all 50 states.
 
