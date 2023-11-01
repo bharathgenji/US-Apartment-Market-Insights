@@ -96,22 +96,22 @@ In addressing Question 9, we determined the average rental price per square foot
 <!-- Zac needs to inset the code here. -->
 <!-- ![Average Square Footage by State](./Avg_price_sqft_state.jpeg) -->
 
-``` {r , echo = FALSE}
+``` {r , echo = FALSE, message=FALSE, warning=FALSE}
 
 # here we have two checks to make sure that the packages are loaded and installed
-#if (!require(readxl)) {
-#  install.packages("readxl")
-#}
+if (!require(readxl)) {
+  install.packages("readxl")
+}
 library(readxl)
 
-#if (!require(knitr)) {
-#  install.packages("knitr")
-#}
+if (!require(knitr)) {
+  install.packages("knitr")
+}
 library(knitr)
 
-#if (!require(dplyr)) {
-#  install.packages("dplyr")
-#}
+if (!require(dplyr)) {
+  install.packages("dplyr")
+}
 library(dplyr)
 
 # Read the Excel file
@@ -137,7 +137,7 @@ filtered_df_with_dc$square_feet <- as.numeric(as.character(filtered_df_with_dc$s
 
 # Check for any non-numeric values that might have been converted to NAs
 na_square_feet_count <- sum(is.na(filtered_df_with_dc$square_feet))
-cat("Number of NA values in square_feet:", na_square_feet_count, "\n")
+#cat("Number of NA values in square_feet:", na_square_feet_count, "\n")
 
 # Compute the average rental price per square foot and the count of observations for each state
 statewise_stats <- filtered_df_with_dc %>%
@@ -154,9 +154,9 @@ statewise_stats$weighted_avg_price_per_sqft <- statewise_stats$avg_price_per_sqf
 # Compute the overall weighted average rental price per square foot for the entire dataset
 overall_weighted_avg_price_per_sqft <- sum(statewise_stats$weighted_avg_price_per_sqft) / sum(statewise_stats$count)
 
-#if (!require(ggplot2)) {
-#  install.packages("ggplot2")
-#}
+if (!require(ggplot2)) {
+  install.packages("ggplot2")
+}
 library(ggplot2)
 
 # Create a bubble plot with adjusted red line label and legend position
