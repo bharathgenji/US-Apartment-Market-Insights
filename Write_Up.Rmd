@@ -62,24 +62,125 @@ In our initial analysis phase, we identified two distinct categories within the 
 As our analysis progressed, the variant factors, particularly those related to geographic location, came into sharper focus. We observed noticeable differences in rental prices across states, leading us to craft state-specific questions. For example, we explored whether an apartment's proximity to city centers or its size influenced its rental price differently in various states.
 
 This structured approach allowed us to dissect the data methodically, beginning with universal trends and then zooming in on location-based nuances.
-## Chi-Squared Results
+### Chi-Squared Results
 
-Question 1: Relationship between Photo Availability and Price Type
+Test 1: Relationship between Photo Availability and Price Type
 
-We examine how the availability of photos in a listing correlates with the way rental prices are presented. 
+We examine how the availability of photos in a listing correlates with the way rental prices are presented.
 In this stacked bar chart, we can see that there are noticeable differences in photo availability across various price types.
 
-![Chi-Squared Results 1](Chi-Squared Results 1_Relationship between Photo Availability and Price Type.jpeg)
 
-Question 2: Distribution of Listings Across States
+``` {r , echo = FALSE, message=FALSE, warning=FALSE}
+
+################################################################################
+# Chi-Square Test on the Relationship Between Photo Availability and Price Type
+################################################################################
+
+# Load necessary libraries
+if (!require(readxl)) {
+  install.packages("readxl")
+}
+library(readxl)
+
+if (!require(tidyverse)) {
+  install.packages("tidyverse")
+}
+library(tidyverse)
+
+# Read the dataset
+data <- read_excel("cleaned_data.xlsx")
+
+# Creating a contingency table for photo availability and price type
+contingency_table_photo_price <- table(data$has_photo, data$price_type)
+
+# Performing the Chi-Square Test of Independence
+chi_square_test_photo_price <- chisq.test(contingency_table_photo_price)
+
+# Printing the results of the Chi-Square test
+print(chi_square_test_photo_price)
+
+# Using ggplot to create a stacked bar plot to show the relationship between photo availability and price type
+
+if (!require(scales)) {
+  install.packages("scales")
+}
+library(scales)
+
+if (!require(ggplot2)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+ggplot(data, aes(x = price_type, fill = has_photo)) +
+  geom_bar(position = "fill", color = "white") +  # Creating a stacked bar plot
+  scale_y_continuous(labels = percent_format(scale = 1)) +  # Setting y-axis labels to percentage format
+  labs(title = "Relationship between Photo Availability and Price Type",
+       x = "Price Type",
+       y = "Percentage") +  
+  theme_minimal() +  # Using a minimal theme for a cleaner look
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotating x-axis text for better readability
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))  # Adjusting plot margin to prevent clipping
+
+```
+
+<!--  ![Chi-Squared Results 1](Chi-Squared Results 1_Relationship between Photo Availability and Price Type.jpeg) -->
+
+Test 2: Distribution of Listings Across States
 
 We also take a look at the geographical distribution of apartment listings across the United States. 
 In this visualization, each bar represents a state, and the height of the bar correlates with the number of listings in that state.
 There are clear trends visible, with certain states showing a much higher number of listings, such as California and Texas.This uneven distribution indicates potential market hotspots and areas that may require more attention or resources to boost listing numbers.
 
-![Chi-Squared Results 2](Chi-Squared Results 2_Distribution of Listings Across States.jpeg)
+``` {r , echo = FALSE, message=FALSE, warning=FALSE}
 
-Question 3: Association Between Pets Allowed Status and Rent Prices
+################################################################
+# Chi-Square Test on the Distribution of Listings Across States
+################################################################
+
+# Install necessary packages
+if (!require(readxl)) {
+  install.packages("readxl")
+}
+library(readxl)
+
+if (!require(tidyverse)) {
+  install.packages("tidyverse")
+}
+library(tidyverse)
+
+# Read the dataset
+data <- read_excel("cleaned_data.xlsx")
+
+# Data cleaning
+# Check the number of unique states
+num_states <- length(unique(data$state))
+
+# Create a vector of expected frequencies
+expected_frequencies <- rep(1/num_states, num_states)
+
+# Creating a contingency table of the number of listings in each state
+contingency_table <- table(data$state)
+
+# Performing the Chi-Square test
+chi_square_test_state <- chisq.test(contingency_table)
+
+# Printing the results of the Chi-Square test
+print(chi_square_test_state)
+
+# Visualize the distribution of listings across states using a bar plot
+ggplot(data, aes(x = state)) +
+  geom_bar(fill = "#ADD8E6") +
+  labs(title = "Distribution of Listings Across States",
+       x = "State",
+       y = "Number of Listings") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+<!--  ![Chi-Squared Results 2](Chi-Squared Results 2_Distribution of Listings Across States.jpeg) --->
+
+Test 3: Association Between Pets Allowed Status and Rent Prices
 
 We also Investigate the association between "pets allowed" status and different rent price ranges, by using Chi-square test on the contingency table of "pets allowed" status and rent price categories.
 We categorized the rental prices into three ranges: Low, Medium, and High.
@@ -87,7 +188,37 @@ A Chi-square test was conducted on a contingency table, comprising these price r
 The results were quite telling, with a Chi-square value of 292.76, and an extremely low p-value, practically zero. 
 This leads us to reject the null hypothesis, concluding a significant association between the pets allowed status and the rental price ranges. 
 
+``` {r , echo = FALSE, message=FALSE, warning=FALSE}
+
+##################################################################################
+# Chi-Square Test on the Relationship Between Pets Allowed Status and Price Range
+##################################################################################
+
+# Creating a new variable for price range based on the 'price' variable
+data$price_category <- cut(data$price,
+                           breaks = c(-Inf, 1000, 2000, Inf),
+                           labels = c("Low", "Medium", "High"))
+
+# Creating a contingency table of pets allowed status against price range
+contingency_table_pets_price <- table(data$pets_allowed, data$price_category)
+
+# Perform Chi-Square Test
+chi_square_test_pets_price <- chisq.test(contingency_table_pets_price)
+
+# Printing the results of the Chi-Square test
+print(chi_square_test_pets_price)
+
+mosaicplot(contingency_table_pets_price, main = "Pets Allowed vs. Price Range",
+           cex.axis = 0.7, 
+           las = 2,   
+           mar = c(5, 4, 2, 2) + 0.1)  
+
+```
+
 ![Chi-Squared Results 3](Chi-Squared Results 3_Pets Allowed vs. Price Range.jpeg)
+<!-- #### Test of SubSet -->
+
+#### Question
 
 SMART Question 9: What is the average rental price per square foot for apartments in different states within the dataset, and how do these prices compare to the overall dataset average?
 
