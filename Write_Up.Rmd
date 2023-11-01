@@ -447,7 +447,58 @@ print(plots[["NY"]])
 
 To further substantiate our findings, we referred to the graph depicting the average square footage by state (see attached JPEG). The visual representation corroborates our analysis, showing New York leading the pack with the highest average square footage, followed closely by California and then Texas. This pattern aligns with our earlier observation that in areas where rent is less influenced by square footage, the average square footage tends to be higher. Specifically, in New York, where the locational premium seems to dominate rental pricing, dwellings offer more spacious interiors on average compared to other states.
 
-![Average Square Foor by State Descending](./Average sqft by state.jpeg)
+<!-- ![Average Square Foor by State Descending](./Average sqft by state.jpeg) -->
+
+``` {r , echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=4}
+
+# Load necessary packages
+if (!require(readxl)) {
+  install.packages("readxl")
+}
+library(readxl)
+
+if (!require(dplyr)) {
+  install.packages("dplyr")
+}
+library(dplyr)
+
+if (!require(ggplot2)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+# Load the data
+data <- read_excel("cleaned_data.xlsx")
+
+# Filter out non-states
+valid_states <- c(
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY", "DC"
+)
+data <- data[data$state %in% valid_states,]
+
+# Convert square_feet to numeric
+data$square_feet <- as.numeric(data$square_feet)
+
+# Drop rows with NA in square_feet
+data <- data[!is.na(data$square_feet),]
+
+# Calculate the average square foot by state
+avg_sqft_by_state <- data %>%
+  group_by(state) %>%
+  summarize(avg_sqft = mean(square_feet, na.rm = TRUE)) %>%
+  arrange(-avg_sqft)  # Sort in descending order
+
+# Plot the result with the states on the x-axis and sorted bars
+ggplot(avg_sqft_by_state, aes(x = reorder(state, avg_sqft), y = avg_sqft)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +  # Rotate x-axis labels for better visibility
+  labs(title = "Average Square Foot by State", x = "State", y = "Average Square Foot")
+
+```
 
 ## 6. Beneficial Augmentations to the Dataset
 
