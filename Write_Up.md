@@ -262,6 +262,10 @@ Deeper into this a regression of sq_ft ~ price for TX, CA, and NY can be taken t
 
 Comparing the slopes of CA and TX their slopes are somewhat similar, but the skew of the data itself is immensely different.It is clearly shows the skew of the CA market contrasted against a more affordable market such as TX every value has been thrown to the right of the graph. The clustering in Texas much more closely follows the weighted square average calculated earlier.
 
+Finally, we have New York, which seems to have the locational premium makeup the majority of the price of listings. It possesses a negative slope, with ordered pairs of square_foot and price being distributed over the entirety of the graph. This suggests that the housing market of New York is not overly reliant on square footage to determine price but instead on the location of the dwelling itself.
+
+![New York Locational Premium](./sqft~ price NY.jpeg)
+
 ## 6. Beneficial Augmentations to the Dataset
 
 While the current dataset provides a valuable snapshot of the US apartment rental market, several enhancements can bolster its analytical and predictive capabilities. Incorporating these additions would enable a more robust and nuanced understanding of rental dynamics, catering to various stakeholders in the rental ecosystem.
