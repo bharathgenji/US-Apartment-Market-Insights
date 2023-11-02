@@ -237,7 +237,7 @@ library(readr)
 library(ggplot2)
 library(dplyr)
 
-# Reading the CSV file
+# Reading the file
 data <- read_excel("cleaned_data.xlsx")
 
 # Data Cleaning and Transformation
