@@ -803,6 +803,10 @@ The resulting bar chart elucidates the fact that different bedroom-bathroom conf
 
 In summation, the configuration of an apartment, specifically the number of bedrooms and bathrooms, plays a pivotal role in its rental price. This analysis offers a granular understanding of such trends, proving invaluable for potential renters and landlords alike.
 
+## Limitatations of The Dataset
+
+SMART question 12 was cut from the analysis due to a data limitation. Due to the "sparse" observation count and high level of amenity bundling we received counter intuitive results such as a pool having a negative effect on price.
+
 
 ## 6. Beneficial Augmentations to the Dataset
 
