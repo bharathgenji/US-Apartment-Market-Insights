@@ -732,7 +732,7 @@ Visual Insights: The bar chart provided a lucid representation of rental prices 
 
 In essence, our analysis has illuminated the nuanced ways in which rental prices differ based on listing platforms. For potential renters, this emphasizes the importance of shopping around and exploring multiple platforms before making a decision. For property managers and landlords, understanding these platform-specific nuances can guide pricing strategies and listing decisions.
 
-#### Question
+#### Analysis of Bedroom and Bathroom Count Against Price
 
 Rental prices can vary significantly based on the structure and facilities of an apartment. Two of the most influential factors that renters consider are the number of bedrooms and bathrooms in a property. In this segment of our analysis, we aim to explore how these two key features influence rental prices.
 
@@ -745,6 +745,7 @@ Emphasis on Commonality: To derive meaningful insights, our focus will be on bed
 Pricing Patterns: We'll derive average rental prices for each of these frequent combinations to discern any patterns or trends.
 
 Visualization: A bar chart will be used to succinctly represent the average rental prices for these combinations, making the data more interpretable.
+
 ```{r, echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=4}
 # Focus on relevant columns and ensure they are in the correct format
 data<- read_excel("cleaned_data.xlsx")
