@@ -633,6 +633,171 @@ ggplot(avg_sqft_by_state, aes(x = reorder(state, avg_sqft), y = avg_sqft)) +
 
 ```
 
+In analyzing real estate data, outliers can significantly distort the overall understanding of the dataset. Prices that are either exceptionally high or low, compared to the majority, can skew our average calculations and give a misleading portrayal of the market. Thus, our primary aim in this segment of the analysis is to identify and address outliers in the rental prices from the dataset.
+
+```{r , echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=4}
+# Load necessary libraries
+if (!require(readxl)) {
+  install.packages("readxl")
+}
+library(readxl)
+
+if (!require(tidyverse)) {
+  install.packages("tidyverse")
+}
+library(tidyverse)
+
+apartments_data_clean <- read_excel("cleaned_data.xlsx")
+
+# For a variable like 'price', compute the IQR:
+Q1 <- quantile(apartments_data_clean$price, 0.25)
+Q3 <- quantile(apartments_data_clean$price, 0.75)
+IQR <- Q3 - Q1
+
+# Define bounds for outliers
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+# Filter out outliers
+apartments_data_no_outliers <- apartments_data_clean %>%
+  filter(price >= lower_bound & price <= upper_bound)
+
+# Visualize price without outliers
+ggplot(apartments_data_no_outliers, aes(x = price)) + 
+  geom_histogram(binwidth = 50, fill = "blue", alpha = 0.7) + 
+  theme_minimal() + 
+  labs(title = "Distribution of Price (No Outliers)", x = "Price", y = "Frequency")
+
+```
+The histogram showcases the distribution of rental prices devoid of outliers. It provides a more centralized view, allowing for easier identification of the mode and median prices, and offers a clearer understanding of where the majority of rental prices lie within the market.
+
+
+#### Question
+
+Listing Sources Analysis: Our primary aim in this analysis is to investigate how rental prices fluctuate based on the source of the listing. Sources like RentLingo, Zillow, among others, could influence the perceived value and, consequently, the listed rental price of properties. 
+
+
+
+```{r, echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=4}
+apartments_data<- read_excel("cleaned_data.xlsx")
+
+
+# a. Descriptive Statistics and Measures of Variance
+source_grouped <- aggregate(price ~ source, data = apartments_data, FUN = mean)
+source_stats <- cbind(source_grouped, 
+                      median = tapply(apartments_data$price, apartments_data$source, median),
+                      variance = tapply(apartments_data$price, apartments_data$source, var),
+                      sd = tapply(apartments_data$price, apartments_data$source, sd))
+
+# b. Normality Test
+# Filtering and sampling for Shapiro-Wilk test
+shapiro_test_results <- lapply(split(apartments_data$price, apartments_data$source), function(x) {
+  sample_size <- length(x)
+  if(sample_size < 3) {
+    return(NA)
+  } else if(sample_size > 5000) {
+    x <- sample(x, 5000)  # Taking a random sample of 5000 data points
+  }
+  shapiro.test(x)$p.value
+})
+
+# Convert the results to a data frame for better visualization
+shapiro_df <- data.frame(source = names(shapiro_test_results), p_value = unlist(shapiro_test_results))
+
+# c. ANOVA Analysis
+anova_result <- aov(price ~ source, data = apartments_data)
+anova_summary <- summary(anova_result)
+
+# d. Visualization
+ggplot(source_stats, aes(x = reorder(source, -price), y = price)) +
+  geom_bar(stat = "identity", fill = "dodgerblue") +
+  coord_flip() +
+  labs(title = "Average Rental Price by Source", x = "Listing Source", y = "Average Rental Price") +
+  theme_minimal() +
+  geom_errorbar(aes(ymin = price - sd, ymax = price + sd), width = 0.5)
+
+# Output the computed values and the ggplot object
+#list(ggplot_plot)
+
+```
+Upon completion of our analysis, several key insights have emerged regarding the variation in rental prices based on the listing source:
+
+Descriptive Variations: Different listing sources exhibit distinct average rental prices. For instance, while sources like Listanza and RENTOCULAR lean towards higher average rental prices, others like GoSection8 and ListedBuy have averages that are relatively moderate.
+
+Data Distribution: Our normality assessment revealed that rental prices for several sources do not adhere to a normal distribution. This is an essential observation, impacting the way we interpret and make subsequent decisions based on our data.
+
+Statistical Differences: The ANOVA analysis confirmed that there are statistically significant differences in rental prices across various listing sources. This underscores the importance of considering the listing platform when evaluating rental price benchmarks.
+
+Visual Insights: The bar chart provided a lucid representation of rental prices across sources, with variations clearly evident. The error bars further added context by showcasing the variability in prices for each source.
+
+In essence, our analysis has illuminated the nuanced ways in which rental prices differ based on listing platforms. For potential renters, this emphasizes the importance of shopping around and exploring multiple platforms before making a decision. For property managers and landlords, understanding these platform-specific nuances can guide pricing strategies and listing decisions.
+
+#### Question
+
+Rental prices can vary significantly based on the structure and facilities of an apartment. Two of the most influential factors that renters consider are the number of bedrooms and bathrooms in a property. In this segment of our analysis, we aim to explore how these two key features influence rental prices.
+
+Data Refinement: By selecting relevant columns and ensuring accurate data types, we lay a strong foundation for our analysis.
+
+Combination Insights: Creating a combined metric like "2B1Ba" (indicating 2 bedrooms and 1 bathroom) offers a composite view, enabling us to analyze how different configurations influence rental prices.
+
+Emphasis on Commonality: To derive meaningful insights, our focus will be on bedroom-bathroom combinations that are most common in the dataset.
+
+Pricing Patterns: We'll derive average rental prices for each of these frequent combinations to discern any patterns or trends.
+
+Visualization: A bar chart will be used to succinctly represent the average rental prices for these combinations, making the data more interpretable.
+```{r, echo = FALSE, message=FALSE, warning=FALSE, fig.align='center', fig.width=10, fig.height=4}
+# Focus on relevant columns and ensure they are in the correct format
+data<- read_excel("cleaned_data.xlsx")
+
+data <- data %>% 
+  select(bedrooms, bathrooms, price) %>% 
+  mutate(
+    bedrooms = as.numeric(bedrooms),
+    bathrooms = as.numeric(bathrooms),
+    rental_price = as.numeric(price)
+  ) %>% 
+  filter(!is.na(bedrooms), !is.na(bathrooms), !is.na(rental_price)) # Remove rows with missing values
+
+# Create a combination column for bedrooms and bathrooms
+data <- data %>% 
+  mutate(bed_bath_combo = paste(bedrooms, "B", bathrooms, "Ba", sep = ""))
+
+# Filter for common bedroom-bathroom combinations
+common_combinations <- data %>% 
+  group_by(bed_bath_combo) %>% 
+  tally() %>% 
+  filter(n > 50) %>%  # Adjust this threshold as needed
+  select(bed_bath_combo)
+
+data <- data %>% 
+  filter(bed_bath_combo %in% common_combinations$bed_bath_combo)
+
+# Calculate average rental prices for each combination
+avg_prices <- data %>% 
+  group_by(bed_bath_combo) %>% 
+  summarise(avg_rental_price = mean(rental_price))
+
+# Visualize the data
+# Bar chart of average rental prices for different bedroom-bathroom combinations
+p1 <- ggplot(avg_prices, aes(x = reorder(bed_bath_combo, -avg_rental_price), y = avg_rental_price)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  theme_minimal(base_size = 15) +
+  labs(
+    title = "Average Rental Prices for Different Bedroom-Bathroom Combinations",
+    x = "Bedroom-Bathroom Combination",
+    y = "Average Rental Price ($)",
+    caption = "Data source: Rental Radiance USA"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Show the plot
+print(p1)
+```
+The resulting bar chart elucidates the fact that different bedroom-bathroom configurations have varied average rental prices. Certain combinations, possibly owing to their popularity, demand or scarcity, command a higher average rental price. The chart allows for a clear comparison between different configurations. Arranged in descending order of average price, it's evident which combinations are considered premium and which ones are more economical.
+
+In summation, the configuration of an apartment, specifically the number of bedrooms and bathrooms, plays a pivotal role in its rental price. This analysis offers a granular understanding of such trends, proving invaluable for potential renters and landlords alike.
+
+
 ## 6. Beneficial Augmentations to the Dataset
 
 While the current dataset provides a valuable snapshot of the US apartment rental market, several enhancements can bolster its analytical and predictive capabilities. Incorporating these additions would enable a more robust and nuanced understanding of rental dynamics, catering to various stakeholders in the rental ecosystem.
