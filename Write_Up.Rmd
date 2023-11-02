@@ -49,11 +49,11 @@ This matrix provides a visual representation of how different variables in the d
 
 The origin of this dataset is the UCI database, but the original data compilation was executed by "RentLingo", an online platform. This suggests a digital scraping or aggregation method, wherein listings from various sources might have been collated. It's essential to recognize the potential biases that might arise from such collection methods, such as over-representation of certain types of listings or geographies.
 
-## 4. Inital Analyses and Findings
+## 4. Initial Analyses and Findings
 
 Diving into the dataset, we first focused on data refinement, ensuring its clarity and usability. This step was crucial in setting up a comprehensive Exploratory Data Analysis (EDA). During EDA, we identified key patterns and relationships between various attributes. Our main objective was to grasp the dataset's depth and its potential for predictive modeling.
 
-An important aspect of our analysis was to assess the significance of using the states column to group listings, as the real estate market is extremely localized. To validate this approach, we used an ANOVA test, the results of which are shared in the subsequent section.
+An important aspect of our analysis was to assess the significance of using the states column to group listings. The real estate market is extremely localized. To validate this approach, we used an ANOVA test, the results of which are shared in the subsequent section.
 
 <!-- % Need the inset code for this section -->
 ![ANOVA Results](./ANOVA.png)
@@ -188,10 +188,10 @@ ggplot(data, aes(x = state)) +
 
 Test 3: Association Between Pets Allowed Status and Rent Prices
 
-We also Investigate the association between "pets allowed" status and different rent price ranges, by using Chi-square test on the contingency table of "pets allowed" status and rent price categories.
+We also investigate the association between "pets allowed" status and different rent price ranges, by using Chi-Square test on the contingency table of "pets allowed" status and rent price categories.
 We categorized the rental prices into three ranges: Low, Medium, and High.
-A Chi-square test was conducted on a contingency table, comprising these price ranges and the pets allowed status. 
-The results were quite telling, with a Chi-square value of 292.76, and an extremely low p-value, practically zero. 
+A Chi-Square test was conducted on a contingency table, comprising these price ranges and the pets allowed status. 
+The results were quite telling, with a Chi-Square value of 292.76, and an extremely low p-value, practically zero. 
 This leads us to reject the null hypothesis, concluding a significant association between the pets allowed status and the rental price ranges. 
 
 ``` {r , echo = FALSE, message=FALSE, warning=FALSE}
@@ -463,7 +463,7 @@ Interestingly the vast majority of states are below this average, and this is be
 <!-- This needs to be inset -->
 ![Average Price by State](./Plot of average.png)
 
-Deeper into this a regression of sq_ft ~ price for TX, CA, and NY can be taken to show the `Locational Premium` or the amount of price determined by the location as opposed to the square footage. 
+Deeper into this a regression of sq_ft ~ price for TX, CA, and NY can be taken to show the `ocational premium` or the amount of price determined by the location as opposed to the square footage. 
 
 <!--
 
