@@ -113,14 +113,14 @@ if (!require(ggplot2)) {
 library(ggplot2)
 
 ggplot(data, aes(x = price_type, fill = has_photo)) +
-  geom_bar(position = "fill", color = "white") +  # Creating a stacked bar plot
-  scale_y_continuous(labels = percent_format(scale = 1)) +  # Setting y-axis labels to percentage format
+  geom_bar(position = "fill", color = "white") +  
+  scale_y_continuous(labels = percent_format(scale = 1)) +  
   labs(title = "Relationship between Photo Availability and Price Type",
        x = "Price Type",
        y = "Percentage") +  
   theme_minimal() +  # Using a minimal theme for a cleaner look
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),  # Rotating x-axis text for better readability
-        plot.margin = unit(c(1, 1, 1, 1), "cm"))  # Adjusting plot margin to prevent clipping
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  
+        plot.margin = unit(c(1, 1, 1, 1), "cm"))  
 
 ```
 
@@ -216,10 +216,143 @@ mosaicplot(contingency_table_pets_price, main = "Pets Allowed vs. Price Range",
 
 ```
 
-![Chi-Squared Results 3](Chi-Squared Results 3_Pets Allowed vs. Price Range.jpeg)
+<!--  ![Chi-Squared Results 3](Chi-Squared Results 3_Pets Allowed vs. Price Range.jpeg)--->
 <!-- #### Test of SubSet -->
 
-#### Question
+#### Photo Impact on Rental Prices
+
+Do apartments with photos tend to have higher rental prices compared to those without photos, and what other attributes might be contributing to this price difference?
+
+We investigated whether apartments with photos command higher rental prices compared to those without. Utilizing a T-Test, we found a t-value of -0.59059 and a p-value of 0.5553, indicating no significant price difference based on the presence of photos. The confidence interval, extending from -126.19 to 67.97, further confirms this finding.
+
+``` {r , echo = FALSE, message=FALSE, warning=FALSE}
+
+# Loading the necessary libraries
+library(readr)
+library(ggplot2)
+library(dplyr)
+
+# Reading the CSV file
+data <- read_excel("cleaned_data.xlsx")
+
+# Data Cleaning and Transformation
+data$has_photo <- as.numeric(data$has_photo == "Yes")
+data$bathrooms <- ifelse(is.na(data$bathrooms), median(data$bathrooms, na.rm = TRUE), data$bathrooms)
+data$bedrooms <- ifelse(is.na(data$bedrooms), median(data$bedrooms, na.rm = TRUE), data$bedrooms)
+data$square_feet <- as.numeric(data$square_feet)
+data$square_feet[is.na(data$square_feet)] <- median(data$square_feet, na.rm = TRUE)
+
+# Data Analysis
+# Calculate average prices
+avg_price_with_photo <- mean(data$price[data$has_photo == 1])
+avg_price_without_photo <- mean(data$price[data$has_photo == 0])
+
+# Perform a t-test
+t_test_result <- t.test(price ~ has_photo, data = data)
+#print(t_test_result)
+
+# Multivariate Linear Regression
+model <- lm(price ~ has_photo + bathrooms + bedrooms + square_feet, data = data)
+#summary(model)
+
+# Visualization
+p1 <- ggplot(data, aes(x = as.factor(has_photo), y = price)) +
+  geom_boxplot() +
+  labs(title = "Rental Price Comparison: Apartments with Photos vs Without Photos",
+       x = "Has Photo",
+       y = "Rental Price ($)") +
+  theme_minimal()
+
+p2 <- ggplot(data, aes(x = bathrooms, y = price, color = as.factor(has_photo))) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Price vs Bathrooms",
+       x = "Number of Bathrooms",
+       y = "Rental Price ($)") +
+  theme_minimal()
+
+print(p1)
+print(p2)
+
+
+```
+
+#### Detecting Outliers
+
+Can we detect any unusual patterns or anomalies in the dataset, such as exceptionally low or high rental prices, and what contextual information can explain these anomalies?
+In this analysis, we aim to uncover unusual patterns in the dataset, focusing particularly on anomalies in rental prices. While the average rental price stands at around 1,483, there are listings with prices soaring to 52,500. Through visualizations like box plots and scatter plots, along with summary statistics, we delve into these extremes to understand their nature and context.
+
+``` {r , echo = FALSE, message=FALSE, warning=FALSE}
+
+# Load necessary libraries
+library(readr)
+library(ggplot2)
+library(dplyr)
+library(readxl)
+
+# Read the data
+data <- read_excel("cleaned_data.xlsx")
+
+# Data Cleaning and Transformation
+data <- data %>%
+  mutate(
+    has_photo = if_else(has_photo == "Yes", 1, 0),
+    bathrooms = as.numeric(bathrooms),
+    bedrooms = as.numeric(bedrooms),
+    square_feet = as.numeric(square_feet)
+  ) %>%
+  mutate(
+    bathrooms = ifelse(is.na(bathrooms), median(bathrooms, na.rm = TRUE), bathrooms),
+    bedrooms = ifelse(is.na(bedrooms), median(bedrooms, na.rm = TRUE), bedrooms),
+    square_feet = ifelse(is.na(square_feet), median(square_feet, na.rm = TRUE), square_feet)
+  )
+
+# Visualizing the Distribution of Rental Prices
+p1 <- ggplot(data, aes(x = price)) +
+  geom_histogram(binwidth = 100) +
+  theme_minimal() +
+  labs(title = "Distribution of Rental Prices", x = "Rental Price ($)", y = "Frequency",
+       caption = "The histogram shows the distribution of rental prices. Notice any skewness or potential outliers.")
+print(p1)
+#ggsave("Distribution_of_Rental_Prices.jpg", plot = p1, width = 10, height = 8, units = "cm")
+
+# Summary Statistics of Rental Prices
+summary_stats <- summary(data$price)
+print(summary_stats)
+
+# Identifying and Visualizing Anomalies in Rental Prices
+Q1 <- quantile(data$price, 0.25)
+Q3 <- quantile(data$price, 0.75)
+IQR <- Q3 - Q1
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+outliers <- data %>% filter(price < lower_bound | price > upper_bound)
+
+# Using Box Plot to visualize anomalies in rental prices
+p_boxplot <- ggplot(data, aes(y = price)) + 
+  geom_boxplot(outlier.colour = "red", outlier.shape = 8, outlier.size = 4) + 
+  labs(title = "Detecting Price Outliers", y = "Rental Price ($)",
+       caption = "The box plot visualizes the spread of rental prices. The middle 50% of the prices are within the box, while the lines (whiskers) extend to the smallest and largest values within 1.5 times the interquartile range. Prices beyond these whiskers are considered outliers and are highlighted in red.") +
+  theme_minimal()
+print(p_boxplot)
+#ggsave("Detecting_Price_Outliers.jpg", plot = p_boxplot, width = 10, height = 8, units = "cm")
+
+# High Price Outliers
+
+# Analyze high price outliers to understand the characteristics of listings that are priced high.
+high_price_outliers <- subset(data, price > upper_bound)
+p_high <- ggplot(high_price_outliers, aes(x = bedrooms, y = price)) +
+  geom_point(aes(color = "High Price Outliers"), size = 3) +
+  theme_minimal() +
+  labs(title = "High Rental Prices", x = "Number of Bedrooms", y = "Rental Price",
+       caption = "This plot shows listings with unusually high rental prices. Each point represents a listing.")
+print(p_high)
+#ggsave("Low_Rental_Prices.jpg", plot = p_low, width = 10, height = 8, units = "cm")
+
+
+```
+
+
 
 SMART Question 9: What is the average rental price per square foot for apartments in different states within the dataset, and how do these prices compare to the overall dataset average?
 
