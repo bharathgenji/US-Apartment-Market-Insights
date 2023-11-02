@@ -1,10 +1,15 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 <!--- Rmarkdown for the paper. --->
 <!--- Zachary Perry group 5 I think --->
 
 ---
 title: "Summary of Research and EDA Process on the Apartment Rental Dataset"
-author: "Zachary Perry"
-date: "`r Sys.Date()`"
+author: "Zachary Perry, Bharath Genji Mohana Ranga, Erica Zhao, Chinmay Dhamapurkar"
+date: `r Sys.Date()`
 output: html_document
 ---
 
