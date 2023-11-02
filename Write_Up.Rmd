@@ -71,7 +71,7 @@ We examine how the availability of photos in a listing correlates with the way r
 In this stacked bar chart, we can see that there are noticeable differences in photo availability across various price types.
 
 
-``` {r , echo = FALSE, message=FALSE, warning=FALSE}
+``` {r , echo = FALSE, message=FALSE, warning=FALSE, fig.width=8, fig.height=6}
 
 ################################################################################
 # Chi-Square Test on the Relationship Between Photo Availability and Price Type
