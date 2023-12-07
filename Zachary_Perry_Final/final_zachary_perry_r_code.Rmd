@@ -89,6 +89,11 @@ Conclusion
 Through these refinements in R, we enhanced the performance of the LASSO regression model. This process involved meticulous data preparation, scaling, and feature enhancement, along with robust model training using cross-validation. The outcome was a more accurate and reliable model, as indicated by the improved RMSE, demonstrating its efficacy in predicting the target variable.
 
 ```{r, include=TRUE}
+
+packages <- c("tidyverse", "glmnet", "caret", "ModelMetrics")
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
 # Load necessary libraries
 library(tidyverse)
 library(glmnet)
@@ -96,7 +101,7 @@ library(caret)
 library(ModelMetrics)
 
 # Load the dataset (replace with your actual file path)
-data <- read_csv("path/to/your/dataset.csv")
+data <- read_excel("cleaned_data_project.xlsx")
 
 # Data Preprocessing
 # Replace NA values in numeric columns with 0
@@ -107,9 +112,12 @@ data <- data %>%
 numeric_columns <- sapply(data, is.numeric)
 data_scaled <- as.data.frame(scale(data[, numeric_columns]))
 
-# Adding Polynomial Features
-# Note: Adjust the degree as needed
-poly_features <- as.data.frame(model.matrix(~ poly(data_scaled, degree = 2, raw = TRUE) - 1))
+# Adding Polynomial Features manually
+poly_features <- data_scaled %>% 
+  mutate(across(everything(), list(~ .^2, ~ .^3), .names = "{.col}_{.fn}"))
+
+# Ensure no missing values are present
+poly_features[is.na(poly_features)] <- 0
 
 # Preparing for LASSO Regression
 set.seed(123)
