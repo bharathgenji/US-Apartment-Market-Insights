@@ -1,0 +1,73 @@
+---
+title: "Final Project Intro to Data Science"
+author: "Zachary Perry"
+date: "12/7/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Check if packages are installed, install them if they are not
+packages <- c("readxl", "dplyr", "glmnet")
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+# Load the packages
+library(readxl)
+library(dplyr)
+library(glmnet)
+
+# Load the dataset
+data <- read_excel("/path/to/your/cleaned_data_project.xlsx")
+
+# Data Preprocessing
+# Handling missing values - Replace NA with median or mode as appropriate
+# For numeric columns, using median
+num_cols <- sapply(data, is.numeric)
+data[num_cols] <- lapply(data[num_cols], function(x) ifelse(is.na(x), median(x, na.rm = TRUE), x))
+
+# For categorical columns, using mode (most frequent value)
+getmode <- function(v) {
+   uniqv <- unique(v)
+   uniqv[which.max(tabulate(match(v, uniqv)))]
+}
+
+cat_cols <- sapply(data, is.character)
+data[cat_cols] <- lapply(data[cat_cols], function(x) ifelse(is.na(x), getmode(x), x))
+
+# Encoding categorical variables
+data <- data %>%
+  mutate_if(is.character, as.factor) %>%
+  mutate_if(is.factor, as.numeric)
+
+# Splitting the data into training and testing sets
+set.seed(123) # for reproducible results
+train_index <- sample(1:nrow(data), 0.8 * nrow(data))
+train_data <- data[train_index, ]
+test_data <- data[-train_index, ]
+
+# Separating predictors and response
+x_train <- as.matrix(train_data[, -which(names(train_data) == "price")]) # Replace "price" with your target variable name
+y_train <- train_data$price
+
+x_test <- as.matrix(test_data[, -which(names(test_data) == "price")])
+y_test <- test_data$price
+
+# Lasso Regression with cross-validation
+set.seed(123)
+cv.lasso <- cv.glmnet(x_train, y_train, alpha = 1)
+best_lambda <- cv.lasso$lambda.min
+
+# Fitting Lasso model with the best lambda
+lasso_model <- glmnet(x_train, y_train, alpha = 1, lambda = best_lambda)
+
+# Predicting on test data
+predictions <- predict(lasso_model, s = best_lambda, newx = x_test)
+
+# Evaluating the model
+mean_squared_error <- mean((predictions - y_test) ^ 2)
+print(paste("MSE:", mean_squared_error))
+
+# Print the coefficients
+print(coef(lasso_model, s = best_lambda))
+
+```
