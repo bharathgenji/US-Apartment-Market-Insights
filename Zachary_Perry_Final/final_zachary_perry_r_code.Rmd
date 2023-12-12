@@ -139,12 +139,22 @@ y_test <- data$price[-split]
 # Fit LASSO model using cross-validation
 cv_fit_2 <- cv.glmnet(as.matrix(train), y_train, alpha = 1)
 
+# Predicting on the training set
+train_predictions <- predict(cv_fit_2, s = "lambda.min", newx = as.matrix(train))
+
+# Calculating RMSE for the training set
+rmse_train <- sqrt(mean((train_predictions - y_train) ^ 2))
+
+
 # Predicting and Evaluating
 predictions <- predict(cv_fit_2, s = "lambda.min", newx = as.matrix(test))
 rmse_2 <- sqrt(mean((predictions - y_test) ^ 2))
 
 # Output RMSE and optimal lambda
+rmse_train
 rmse_2
+
+print("Interestingly the RMSE is lower in the test set than the train set. This potentially means the model is not overfitting which is interesting as the RMSE has decreased by an alarmingly signifignt amount from the raw to refined version. Despite this I still belive the model is overfitting.")
 cv_fit_2$lambda.min
 
 ```

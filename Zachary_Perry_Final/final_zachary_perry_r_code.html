@@ -340,12 +340,21 @@ y_test &lt;- data$price[-split]
 # Fit LASSO model using cross-validation
 cv_fit_2 &lt;- cv.glmnet(as.matrix(train), y_train, alpha = 1)
 
+# Predicting on the training set
+train_predictions &lt;- predict(cv_fit_2, s = &quot;lambda.min&quot;, newx = as.matrix(train))
+
+# Calculating RMSE for the training set
+rmse_train &lt;- sqrt(mean((train_predictions - y_train) ^ 2))
+
+
 # Predicting and Evaluating
 predictions &lt;- predict(cv_fit_2, s = &quot;lambda.min&quot;, newx = as.matrix(test))
 rmse_2 &lt;- sqrt(mean((predictions - y_test) ^ 2))
 
 # Output RMSE and optimal lambda
-rmse_2</code></pre>
+rmse_train</code></pre>
+<pre><code>## [1] 31.83844</code></pre>
+<pre class="r"><code>rmse_2</code></pre>
 <pre><code>## [1] 29.22755</code></pre>
 <pre class="r"><code>cv_fit_2$lambda.min</code></pre>
 <pre><code>## [1] 31.83844</code></pre>
