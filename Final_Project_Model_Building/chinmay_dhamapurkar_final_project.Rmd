@@ -441,9 +441,19 @@ ggplot(long_data, aes(x = models, y = r_squared, fill = tuning)) +
 
 ```
 
-SMART Question
+SMART Question Two
 
 Can the application of LASSO regression, with an optimal regularization parameter, on a dataset of housing features, demonstrate a statistically significant improvement in predictive accuracy (measured by a specific evaluation metric, e.g., Mean Absolute Error) compared to traditional linear regression models, while also providing a parsimonious model with a reduced number of important predictor variables?
+
+LASSO, which stands for Least Absolute Shrinkage and Selection Operator, is a linear regression technique used in statistics and machine learning for feature selection and regularization. It was introduced as a variation of ridge regression and has gained popularity due to its ability to handle high-dimensional datasets and perform feature selection.
+
+In LASSO regression, the goal is to find the best-fitting linear model that minimizes the sum of squared residuals, just like in ordinary least squares (OLS) regression. However, LASSO introduces an additional term to the loss function, known as the L1 regularization term. This term penalizes the absolute values of the regression coefficients, effectively shrinking some of them to exactly zero.
+
+The key idea behind LASSO is that it encourages sparsity in the model, meaning that it forces many of the coefficients associated with less important features to become zero, effectively excluding those features from the model. This automatic feature selection property is particularly useful in situations where you have a large number of potential predictor variables, and you want to identify the subset of features that are most relevant for predicting the target variable.
+
+The parameter λ is a tuning parameter that determines the amount of regularization applied. A larger λ value results in stronger regularization and more coefficients being pushed to zero. The choice of λ depends on the trade-off between model simplicity (fewer features) and predictive accuracy.
+
+LASSO regression is a powerful tool for feature selection and can help prevent overfitting in high-dimensional datasets. It has applications in various fields, including economics, genetics, and machine learning, where feature selection and model interpretability are important considerations.
 
 ```{r setup, include=TRUE}
 knitr::opts_chunk$set(echo = TRUE)
