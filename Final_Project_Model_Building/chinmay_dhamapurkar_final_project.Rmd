@@ -470,7 +470,7 @@ library(caret)
 library(glmnet)
 
 # Load the dataset
-data <- read_excel("cleaned_data_project.xlsx")
+data <- read_excel("cleaned_data.xlsx")
 
 # Preview the data
 head(data)
@@ -638,3 +638,52 @@ Our technical analysis lays the foundation for a comprehensive exploration of ho
 This analysis not only showcases the application of advanced regression techniques but also underscores the importance of data preprocessing and careful model selection in data science projects. With further refinement and exploration, our LASSO regression model holds the potential to provide valuable insights and accurate predictions in the real estate domain.
 
 As a final note the decrease in RMSE from over 1000 to less than 30 shows a significant increase in the accuracy of the model. Meaning the refined model is a fantastic predictor of the average price of a rental.
+
+## Smart Question 3: How do rental prices differ based on the source of the listing and can we identify any specific trends associated with each source?
+
+```{r}
+
+
+# Load necessary libraries
+library(readxl)
+library(dplyr)
+library(ggplot2)
+
+# Load the dataset
+data <- read_excel("cleaned_data.xlsx")
+
+# Summary statistics
+summary(data)
+
+# Basic visualizations
+# Distribution of rental prices
+ggplot(data, aes(x = price)) + 
+  geom_histogram(bins = 50, fill = "blue", color = "black") +
+  theme_minimal() +
+  labs(title = "Distribution of Rental Prices", x = "Price", y = "Count")
+
+# Boxplot of prices by source
+ggplot(data, aes(x = source, y = price)) + 
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Rental Prices by Source", x = "Source", y = "Price")
+
+# Identifying and Removing Outliers
+# Calculate IQR
+IQR <- IQR(data$price)
+lower_bound <- quantile(data$price, 0.25) - 1.5 * IQR
+upper_bound <- quantile(data$price, 0.75) + 1.5 * IQR
+
+# Filter out outliers
+data_no_outliers <- data %>% 
+  filter(price >= lower_bound & price <= upper_bound)
+
+# Boxplot of prices by source without outliers
+ggplot(data_no_outliers, aes(x = source, y = price)) + 
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(title = "Rental Prices by Source (Without Outliers)", x = "Source", y = "Price")
+
+
+
+```
