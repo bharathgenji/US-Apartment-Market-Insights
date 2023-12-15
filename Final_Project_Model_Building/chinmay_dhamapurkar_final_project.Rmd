@@ -639,7 +639,7 @@ This analysis not only showcases the application of advanced regression techniqu
 
 As a final note the decrease in RMSE from over 1000 to less than 30 shows a significant increase in the accuracy of the model. Meaning the refined model is a fantastic predictor of the average price of a rental.
 
-## Smart Question 3: How do rental prices differ based on the source of the listing and can we identify any specific trends associated with each source?
+## Smart Question 3: Can we classify apartments into various categories (e.g., luxury, budget) based on their features?
 
 ```{r}
 
@@ -648,39 +648,41 @@ As a final note the decrease in RMSE from over 1000 to less than 30 shows a sign
 library(readxl)
 library(dplyr)
 library(ggplot2)
+library(viridis)
 
 # Load the dataset
 data <- read_excel("cleaned_data.xlsx")
 
 # Summary statistics
 summary(data)
-# Initial boxplot to visualize outliers
-ggplot(data, aes(x = source, y = price, fill = source)) + 
+# 1. Histogram of Prices
+ggplot(data, aes(x = price)) + 
+  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Distribution of Rental Prices", x = "Price", y = "Frequency")
+
+# Assuming the creation of 'apartment_category' based on price quantiles
+luxury_threshold <- quantile(data$price, 0.90, na.rm = TRUE)
+budget_threshold <- quantile(data$price, 0.10, na.rm = TRUE)
+data$apartment_category <- ifelse(data$price >= luxury_threshold, 'Luxury',
+                                  ifelse(data$price <= budget_threshold, 'Budget', 'Standard'))
+
+# Convert the new column to a factor
+data$apartment_category <- as.factor(data$apartment_category)
+
+# 2. Bar Plot of Apartment Categories
+ggplot(data, aes(x = apartment_category, fill = apartment_category)) + 
+  geom_bar() +
+  scale_fill_viridis(discrete = TRUE) +  # Use viridis palette
+  theme_minimal() +
+  labs(title = "Distribution of Apartment Categories", x = "Category", y = "Count")
+
+# 3. Boxplot of Prices by Apartment Category
+ggplot(data, aes(x = apartment_category, y = price, fill = apartment_category)) + 
   geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(title = "Initial Rental Prices by Source", x = "Source", y = "Price") +
-  scale_fill_brewer(palette = "Spectral")
-
-# Calculate the Interquartile Range (IQR)
-IQR <- IQR(data$price)
-lower_bound <- quantile(data$price, 0.25) - 1.5 * IQR
-upper_bound <- quantile(data$price, 0.75) + 1.5 * IQR
-
-# Filter out outliers more stringently
-data_no_outliers <- data %>%
-  filter(price > lower_bound & price < upper_bound)
-
-# Summary to check the effect of outlier removal
-summary(data_no_outliers$price)
-
-# Replot boxplot without outliers
-ggplot(data_no_outliers, aes(x = source, y = price, fill = source)) + 
-  geom_boxplot() +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(title = "Rental Prices by Source (Without Outliers)", x = "Source", y = "Price") +
-  scale_fill_brewer(palette = "Spectral")
-
-
+  scale_fill_viridis(discrete = TRUE) +  # Use viridis palette
+  theme_minimal() +
+  labs(title = "Rental Prices by Apartment Category", x = "Category", y = "Price")
 
 
 
@@ -729,4 +731,7 @@ Kappa (0.3253): The Kappa statistic adjusts accuracy for chance agreement. A val
 Budget: The model did not correctly identify any 'Budget' apartments (0 true positives). All 'Budget' predictions were false (200 false negatives).
 Luxury: Out of the 202 apartments actually categorized as 'Luxury', the model correctly identified 89 (specificity: 100%), but it failed to identify 113 (false negatives).
 Standard: The model performed well in identifying 'Standard' apartments, with all 1580 predicted correctly (sensitivity: 100%).
+
+The model is highly effective in identifying 'Luxury' and 'Standard' apartments, but it fails to identify 'Budget' apartments.
+The high class imbalance (most apartments being 'Standard') is influencing the model's performance, making it biased towards predicting the 'Standard' category.
 
