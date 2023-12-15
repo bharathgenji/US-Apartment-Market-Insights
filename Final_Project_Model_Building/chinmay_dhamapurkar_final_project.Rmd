@@ -654,36 +654,79 @@ data <- read_excel("cleaned_data.xlsx")
 
 # Summary statistics
 summary(data)
-
-# Basic visualizations
-# Distribution of rental prices
-ggplot(data, aes(x = price)) + 
-  geom_histogram(bins = 50, fill = "blue", color = "black") +
-  theme_minimal() +
-  labs(title = "Distribution of Rental Prices", x = "Price", y = "Count")
-
-# Boxplot of prices by source
-ggplot(data, aes(x = source, y = price)) + 
+# Initial boxplot to visualize outliers
+ggplot(data, aes(x = source, y = price, fill = source)) + 
   geom_boxplot() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(title = "Rental Prices by Source", x = "Source", y = "Price")
+  labs(title = "Initial Rental Prices by Source", x = "Source", y = "Price") +
+  scale_fill_brewer(palette = "Spectral")
 
-# Identifying and Removing Outliers
-# Calculate IQR
+# Calculate the Interquartile Range (IQR)
 IQR <- IQR(data$price)
 lower_bound <- quantile(data$price, 0.25) - 1.5 * IQR
 upper_bound <- quantile(data$price, 0.75) + 1.5 * IQR
 
-# Filter out outliers
-data_no_outliers <- data %>% 
-  filter(price >= lower_bound & price <= upper_bound)
+# Filter out outliers more stringently
+data_no_outliers <- data %>%
+  filter(price > lower_bound & price < upper_bound)
 
-# Boxplot of prices by source without outliers
-ggplot(data_no_outliers, aes(x = source, y = price)) + 
+# Summary to check the effect of outlier removal
+summary(data_no_outliers$price)
+
+# Replot boxplot without outliers
+ggplot(data_no_outliers, aes(x = source, y = price, fill = source)) + 
   geom_boxplot() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  labs(title = "Rental Prices by Source (Without Outliers)", x = "Source", y = "Price")
+  labs(title = "Rental Prices by Source (Without Outliers)", x = "Source", y = "Price") +
+  scale_fill_brewer(palette = "Spectral")
+
+
 
 
 
 ```
+
+```{r}
+
+# Calculate the percentiles for price
+luxury_threshold <- quantile(data$price, 0.90, na.rm = TRUE) # 90th percentile
+budget_threshold <- quantile(data$price, 0.10, na.rm = TRUE) # 10th percentile
+
+# Create the apartment_category column
+data <- data %>% 
+  mutate(apartment_category = case_when(
+    price >= luxury_threshold ~ 'Luxury',
+    price <= budget_threshold ~ 'Budget',
+    TRUE ~ 'Standard'
+  ))
+
+# Combine training and testing data for factor level checks
+combinedData <- rbind(trainData, testData)
+
+
+# Re-split the dataset into training and testing sets after ensuring factor levels
+set.seed(123)
+splitIndex <- createDataPartition(combinedData$apartment_category, p = .80, list = FALSE, times = 1)
+trainData <- combinedData[splitIndex,]
+testData <- combinedData[-splitIndex,]
+
+# Train the Random Forest model
+rf_model <- randomForest(apartment_category ~ ., data = trainData, ntree = 500)
+
+# Predict on test data
+rf_predictions <- predict(rf_model, testData)
+
+# Evaluate the model
+confusionMatrix(rf_predictions, testData$apartment_category)
+
+
+```
+### Overall Statistics:
+Accuracy (0.8421): About 84.21% of the predictions were correct. However, this high accuracy might be misleading due to class imbalance (most apartments are 'Standard').
+Kappa (0.3253): The Kappa statistic adjusts accuracy for chance agreement. A value of 0.3253 suggests moderate agreement.
+
+### Confusion Matrix Analysis:
+Budget: The model did not correctly identify any 'Budget' apartments (0 true positives). All 'Budget' predictions were false (200 false negatives).
+Luxury: Out of the 202 apartments actually categorized as 'Luxury', the model correctly identified 89 (specificity: 100%), but it failed to identify 113 (false negatives).
+Standard: The model performed well in identifying 'Standard' apartments, with all 1580 predicted correctly (sensitivity: 100%).
+
