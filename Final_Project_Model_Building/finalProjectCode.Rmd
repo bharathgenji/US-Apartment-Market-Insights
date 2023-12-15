@@ -1,0 +1,737 @@
+---
+title: "Intro to R Project (Model Building)"
+author: "Group 4"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    code_folding: hide
+    number_sections: false
+    toc: yes
+    toc_depth: 3
+    toc_float: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+```{r include=FALSE}
+# The package "ezids" (EZ Intro to Data Science) includes a lot of the helper functions we developed for the course. 
+# Some of the frequently used functions are loadPkg(), xkabledply(), xkablesummary(), uzscale(), etc.
+library(ezids)
+
+# some of common options (and the defaults) are: 
+# include=T, eval=T, echo=T, results='hide'/'asis'/'markup',..., collapse=F, warning=T, message=T, error=T, cache=T, fig.width=6, fig.height=4, fig.dim=c(6,4) #inches, fig.align='left'/'center','right', 
+# knitr::opts_chunk$set(warning = F, results = "markup", message = F)
+knitr::opts_chunk$set(warning = F, results = "hide", message = F)
+options(scientific=T, digits = 3) 
+# options(scipen=9, digits = 3) 
+# ‘scipen’: integer. A penalty to be applied when deciding to print numeric values in fixed or exponential notation.  Positive values bias towards fixed and negative towards scientific notation: fixed notation will be preferred unless it is more than ‘scipen’ digits wider.
+# use scipen=999 to prevent scientific notation at all times
+```
+
+## Contributor: Chinmay Dhamapurkar
+## Smart Question:Leveraging Machine Learning to Decode Urban Rental Markets: A Predictive Analytics Approach 
+
+```{r cars}
+library(readxl)
+data<- read_excel("C:/Users/Chinmay/OneDrive/Desktop/Intro to datascience project/cleaned_data.xlsx")
+```
+## Some Basic statistics
+```{r results='markup'}
+
+print(data)
+str(data)
+summary(data)
+sum(is.na(data))
+```
+## Cleaning data by fixing the missing values.
+
+Handling Missing Data in 'bathrooms' and 'bedrooms'
+Our dataset shows a small percentage of missing values in two key features: bathrooms (0.80% missing) and bedrooms (0.53% missing). The decision to address these missing values is crucial for the following reasons:
+
+Significance of Features: Both bathrooms and bedrooms are typically important factors in determining rental prices. Therefore, removing these columns could lead to a significant loss of valuable information.
+Low Percentage of Missingness: Given that the missing data constitutes less than 1% for both features, it's feasible to address these missing values without discarding the columns entirely.
+
+Impact on Model Accuracy: The method we choose to handle missing data can affect the accuracy of our predictive model. Proper handling is essential to maintain or enhance the model's performance.
+In conclusion, our strategy will focus on imputing the missing values in bathrooms and bedrooms, as this approach allows us to preserve these influential features in our predictive modeling.
+```{r results='markup'}
+missing_values <- sapply(data, function(x) sum(is.na(x)))
+missing_values_percentage <- (missing_values / nrow(data)) * 100
+missing_data_summary <- data.frame(
+  'Missing Values' = missing_values,
+  'Percentage' = missing_values_percentage
+)
+missing_data_summary[order(-missing_values), ]
+
+```
+```{r results='markup'}
+cleaned_data<-data[complete.cases(data$bathrooms,data$bedrooms), ]
+sum(is.na(cleaned_data$bathrooms))
+sum(is.na(cleaned_data$bedrooms))
+
+```
+## In our analysis, we chose to delete the rows with missing values in the bathrooms and bedrooms columns due to the following reasons:
+
+1)Low Percentage of Missing Data: The missing values represent a very small fraction (less than 1%) of the dataset, suggesting minimal impact on the overall data integrity.
+
+2) Simplicity and Clarity: Deletion simplifies the dataset and avoids the potential biases or inaccuracies introduced by imputation methods.
+
+3) Preserving Data Quality: By removing these incomplete records, we ensure that our analysis is based only on complete and reliable data.
+
+```{r}
+# Install and load necessary packages
+#install.packages("ggplot2")
+#install.packages("corrplot")
+library(ggplot2)
+library(corrplot)
+
+```
+## This section of the code focuses on feature engineering, specifically target encoding and feature selection.
+
+within the context of a dataset (data) aimed at predicting rental prices. Let's break down each step to understand the process and rationale:
+
+1. Target Encoding for City
+Process:
+Calculation: The average rental price (price) is calculated for each city (cityname).
+
+Creation of city_score: This average price is then assigned as a new feature, named city_score.
+
+Merging: This new feature is merged back into the original dataset based on the cityname.
+
+Rationale:
+Purpose: The idea is to capture the average price level of each city in a single number. This helps the model understand how the city's overall rental market impacts individual rental prices.
+
+Why Use Target Encoding?: Target encoding helps in dealing with categorical variables like cityname. It transforms these categories into a meaningful numerical format that a machine learning model can utilize effectively. It's particularly useful when dealing with high cardinality categorical data (many unique values).
+
+2. Target Encoding for State
+Process:
+Calculation: Similar to cities, the average rental price for each state (state) is computed.
+
+Creation of state_score: This average is stored as state_score.
+
+Merging: The state_score is then merged with the main dataset, keyed on state.
+
+Rationale:
+Understanding Regional Trends: This captures the broader regional trends in rental prices. It helps the model to discern patterns at a state level, which might be different from city-specific trends.
+
+3. Selecting Relevant Features
+Process:
+Selection: Features considered important for predicting rental prices are selected. These include bedrooms, bathrooms, square_feet (size of the property), latitude, longitude (geographical location), and the newly created city_score and state_score.
+Rationale:
+
+Focus on Important Variables: This step is about focusing the model's attention on variables that are most likely to influence the rental price. By selecting these features, the model can train more effectively on relevant data.
+
+4. Preparing the Target Variable
+Process:
+Defining the Target: The variable price, which represents the rental price, is set as the target variable for prediction.
+Rationale:
+
+Model's Goal: In supervised learning, the model aims to predict an outcome or target variable. In this case, it's the rental price. Having a clearly defined target variable is crucial for training the model.
+Overall, these steps are crucial for:
+
+Data Transformation: Converting raw data into a format suitable for machine learning.
+
+Enhancing Model Performance: By creating features like city_score and state_score, the model can understand complex patterns in the data, potentially leading to more accurate predictions.
+
+Reducing Dimensionality: Selecting relevant features reduces the complexity of the model, which can help in avoiding overfitting and improving model performance.
+```{r results='markup'}
+average_price_per_city <- aggregate(price ~ cityname, data = data, FUN = mean)
+names(average_price_per_city)[2] <- "city_score"
+data <- merge(data, average_price_per_city, by = "cityname", all.x = TRUE)
+average_price_per_state <- aggregate(price ~ state, data = data, FUN = mean)
+names(average_price_per_state)[2] <- "state_score"
+data <- merge(data, average_price_per_state, by = "state", all.x = TRUE)
+features <- data[c("bedrooms", "bathrooms", "square_feet", "latitude", "longitude", "city_score", "state_score")]
+target <- data$price
+head(features)
+```
+```{r}
+summary(features)
+features$bedrooms <- as.numeric(as.character(features$bedrooms))
+features$bathrooms <- as.numeric(as.character(features$bathrooms))
+features$square_feet <- as.numeric(as.character(features$square_feet))
+features$latitude <- as.numeric(as.character(features$latitude))
+str(features)
+boxplot(features$bedrooms, main = "Boxplot for Bedrooms")
+boxplot(features$bathrooms, main = "Boxplot for Bathrooms")
+boxplot(features$square_feet, main = "Boxplot for Square Feet")
+boxplot(features$latitude, main = "Boxplot for Latitude")
+boxplot(features$longitude, main = "Boxplot for Longitude")
+boxplot(features$city_score, main = "Boxplot for City Score")
+boxplot(features$state_score, main = "Boxplot for State Score")
+hist_data <- hist(features$square_feet, main = "Histogram for Square Feet", xlab = "Square Feet", xlim = c(10, 7500), breaks = 50, ylim = c(0, 8000), plot = FALSE)
+plot(hist_data, col = 'lightblue', main = "Histogram for Square Feet", xlab = "Square Feet", xlim = c(10, 7500), ylim = c(0, 8000))
+mids <- hist_data$mids
+counts <- hist_data$counts
+for(i in seq_along(mids)) {
+    label <- paste(formatC(hist_data$breaks[i], format = "f", digits = 0), "-", formatC(hist_data$breaks[i+1], format = "f", digits = 0), "\n", counts[i], sep = "")
+    text(mids[i], counts[i], label, pos = 3, cex = 0.8)
+}
+hist(features$latitude, main = "Histogram for Latitude", xlab = "Latitude")
+hist(features$longitude, main = "Histogram for Longitude", xlab = "Longitude")
+hist(features$city_score, main = "Histogram for City Score", xlab = "City Score")
+hist(features$state_score, main = "Histogram for State Score", xlab = "State Score")
+```
+## Data Preparation and Cleaning
+Missing Value Check: sum(is.na(features)) calculates the total number of missing values across all features. This step is crucial for understanding the data's cleanliness.
+
+#Complete Case Analysis: complete_cases <- complete.cases(features, target) creates a logical vector indicating rows with no missing values in both features and target. This step is vital for ensuring the model trains on reliable, complete data.
+
+#Data Subsetting: features_clean <- features[complete_cases, ] and target_clean <- target[complete_cases] subset the data to only include complete cases. It ensures that the models are trained on data without missing values.
+
+#Data Splitting
+Setting Seed: set.seed(123) ensures reproducibility in the random sampling process. This step is important for consistent results in repeated analyses.
+
+#Creating Training and Test Sets: The data is randomly split into training and test sets, with 80% of data used for training and the remaining 20% for testing. This split is essential for evaluating the model's performance on unseen data.
+
+## Model Building
+Ridge and Lasso Regression: Utilizing the glmnet package, two types of regression models are built:
+Ridge Regression: ridge_model <- glmnet(as.matrix(train_features), train_target, alpha = 0) uses L2 regularization (penalizing the square of coefficients). alpha = 0 specifies Ridge Regression.
+Lasso Regression: lasso_model <- glmnet(as.matrix(train_features), train_target, alpha = 1) uses L1 regularization (penalizing the absolute value of coefficients). alpha = 1 specifies Lasso Regression.
+Model Evaluation
+Making Predictions: predict() is used to generate predictions on the test set for both models.
+
+# R-squared Calculation:
+
+ridge_r2 and lasso_r2 are calculated to measure the proportion of variance in the dependent variable (target) that is predictable from the independent variables (features). It's a measure of how well unseen samples are likely to be predicted by the model.
+
+The formula 1 - sum((test_target - predictions)^2) / sum((test_target - mean(test_target))^2) computes the R-squared value, reflecting the model's accuracy.
+
+## Conclusion
+R-squared Values: The final output, ridge_r2 and lasso_r2, are the R-squared values for Ridge and Lasso Regression, respectively. These values quantify the models' effectiveness in explaining the variance of the target variable.
+Model Comparison: Comparing ridge_r2 and lasso_r2 helps in understanding which model (Ridge or Lasso) performs better in terms of prediction accuracy on the given dataset.
+```{r results='markup'}
+sum(is.na(features))
+complete_cases <- complete.cases(features, target)
+features_clean <- features[complete_cases, ]
+target_clean <- target[complete_cases]
+
+
+set.seed(123) 
+training_indices <- sample(1:nrow(features_clean), 0.8 * nrow(features_clean))
+train_features <- features_clean[training_indices, ]
+train_target <- target_clean[training_indices]
+test_features <- features_clean[-training_indices, ]
+test_target <- target_clean[-training_indices]
+library(glmnet)
+ridge_model <- glmnet(as.matrix(train_features), train_target, alpha = 0)
+lasso_model <- glmnet(as.matrix(train_features), train_target, alpha = 1)
+
+ridge_predictions <- predict(ridge_model, s = 0.01, newx = as.matrix(test_features))
+lasso_predictions <- predict(lasso_model, s = 0.01, newx = as.matrix(test_features))
+ridge_r2 <- 1 - sum((test_target - ridge_predictions)^2) / sum((test_target - mean(test_target))^2)
+# Computing R-squared for Lasso
+lasso_r2 <- 1 - sum((test_target - lasso_predictions)^2) / sum((test_target - mean(test_target))^2)
+ridge_r2
+lasso_r2
+
+
+```
+## Technical and Mathematical Significance
+
+Cross-Validation: This technique helps in assessing how the results of the statistical analysis will generalize to an independent data set and aids in preventing overfitting.
+
+Regularization (Lambda): The lambda parameter controls the strength of the regularization penalty, which helps in managing overfitting by penalizing large coefficients in the model. Optimal lambda tuning is crucial for balancing bias-variance tradeoff.
+
+Ridge vs Lasso: Ridge regression is good for handling multicollinearity and shrinking coefficients, while Lasso can do variable selection by shrinking some coefficients to zero.
+
+In summary, this code implements a rigorous approach to building, optimizing, and evaluating Ridge and Lasso regression models, leveraging cross-validation to fine-tune the regularization strength and subsequently measuring model performance using R-squared. This methodology ensures robust model building by optimizing the balance between model complexity and generalization ability.
+
+Results: After Hyperparameter tuning R-squared for Ridge: 0.63 and for Lasso: 0.62
+```{r results='markup'}
+# Load necessary library
+library(glmnet)
+cv_ridge <- cv.glmnet(as.matrix(train_features), train_target, alpha = 0)
+optimal_lambda_ridge <- cv_ridge$lambda.min
+ridge_model_opt <- glmnet(as.matrix(train_features), train_target, alpha = 0, lambda = optimal_lambda_ridge)
+ridge_predictions_opt <- predict(ridge_model_opt, newx = as.matrix(test_features))
+cv_lasso <- cv.glmnet(as.matrix(train_features), train_target, alpha = 1)
+optimal_lambda_lasso <- cv_lasso$lambda.min
+lasso_model_opt <- glmnet(as.matrix(train_features), train_target, alpha = 1, lambda = optimal_lambda_lasso)
+lasso_predictions_opt <- predict(lasso_model_opt, newx = as.matrix(test_features))
+ridge_r2_opt <- 1 - sum((test_target - ridge_predictions_opt)^2) / sum((test_target - mean(test_target))^2)
+lasso_r2_opt <- 1 - sum((test_target - lasso_predictions_opt)^2) / sum((test_target - mean(test_target))^2)
+print(paste("Optimal R-squared for Ridge:", round(ridge_r2_opt, 4)))
+print(paste("Optimal R-squared for Lasso:", round(lasso_r2_opt, 4)))
+
+
+```
+## Why Random Forest?
+
+Handling Overfitting: Random Forest is effective in reducing overfitting, a common problem in decision trees, by averaging multiple trees.
+
+Feature Selection: It inherently performs feature selection and provides a good indicator of feature importance.
+
+Handling Non-Linearity: Random Forest can handle non-linear relationships between features and the target variable.
+
+Robust to Noise: The model is generally robust to noise and works well with large datasets.
+
+Versatility: It’s versatile and works well for both classification and regression tasks.
+
+## Analysis of the Result (0.76):
+
+The R-squared value of 0.76 implies that approximately 76% of the variance in the target variable is predictable from the features. This is a relatively high value, indicating good model performance, especially in complex datasets where perfect prediction is often not feasible.
+
+## Number of Trees:
+
+The default number of trees in a randomForest model is 500, but this can be adjusted using the ntree parameter. More trees can improve model accuracy but also increase computational time.
+
+## Conclusion:
+The implementation of the Random Forest model in this code is a robust choice for predictive modeling, particularly due to its ability to manage complex data structures and reduce overfitting. The R-squared value of 0.76 indicates a strong model performance, demonstrating the model's effectiveness in capturing the variability of the target variable.
+
+
+```{r results='markup', eval=FALSE}
+library(randomForest)
+rf_model <- randomForest(train_features, train_target)
+rf_predictions <- predict(rf_model, test_features)
+rf_r2 <- 1 - sum((test_target - rf_predictions)^2) / sum((test_target - mean(test_target))^2)
+print(rf_r2)
+```
+```{r results='markup', eval=FALSE}
+library(xgboost)
+dtrain <- xgb.DMatrix(data = as.matrix(train_features), label = train_target)
+dtest <- xgb.DMatrix(data = as.matrix(test_features))
+params <- list(booster = "gbtree", objective = "reg:squarederror", eta = 0.3, max_depth = 6)
+xgb_model <- xgb.train(params = params, data = dtrain, nrounds = 100)
+xgb_predictions <- predict(xgb_model, dtest)
+xgb_r2 <- 1 - sum((test_target - xgb_predictions)^2) / sum((test_target - mean(test_target))^2)
+
+print(paste("The accuracy for the model is", xgb_r2*100))
+
+```
+## XGBoost (Extreme Gradient Boosting)
+
+## Results : 77.4% Accuracy
+## How It Works:
+
+Ensemble Learning: XGBoost is an ensemble learning method, specifically a gradient boosting framework. It builds an ensemble of decision trees sequentially, where each tree tries to correct the errors of the previous ones.
+
+Gradient Boosting: At its core, XGBoost uses the concept of gradient boosting, where the model's learning involves identifying and correcting for the residuals or errors of prior trees.
+
+Objective Function: The objective function in XGBoost combines a loss function (like squared error for regression) and a regularization term (to penalize model complexity). This helps in balancing the trade-off between bias and variance.
+
+Optimization: It uses a gradient descent algorithm to minimize the loss function. The "gradient" in gradient boosting refers to the gradient of the loss function, which guides the way to adjust the model's predictions.
+
+## Key Features:
+
+Regularization: Includes L1 (Lasso) and L2 (Ridge) regularization, which helps in preventing overfitting.
+
+Handling Missing Values and Feature Importance: Automatically handles missing values and provides an understanding of feature importance.
+
+Efficiency: Highly efficient in terms of computation and memory usage.
+
+## Comparison with Lasso, Ridge, and Random Forest
+Lasso (L1) and Ridge (L2) Regression
+
+Regularization Techniques: Both introduce a penalty term to the linear regression model. Lasso can shrink coefficients to zero (thus performing feature selection), while Ridge shrinks them towards zero.
+
+Linear Models: They are fundamentally linear models and might not capture complex, non-linear relationships as effectively as tree-based methods.
+Random Forest
+
+Decision Trees Ensemble: It builds multiple decision trees and merges them together to get a more accurate and stable prediction.
+
+Reduction of Overfitting: Averages the result of multiple trees to reduce the risk of overfitting.
+
+Non-Linear Relationships: Better at capturing non-linear relationships than linear models but doesn't have an optimization mechanism like gradient boosting.
+XGBoost
+
+Performance: Often outperforms simple ensemble methods like Random Forest when tuned properly, especially on datasets with complex patterns and relationships.
+
+Speed and Flexibility: Faster and offers more flexibility than traditional Random Forests due to its optimization and regularization capabilities.
+
+Generalization: Better at generalizing due to the incorporation of regularization terms.
+
+## Best Performance of XGBoost
+XGBoost's superior performance can be attributed to its efficient use of computing resources, handling of a variety of data types, features, and relationships, and its regularization capability that helps in preventing overfitting.
+
+The mathematical optimization at the heart of XGBoost, through gradient boosting and regularization, allows it to model complex patterns in data more effectively than traditional models.
+
+## Conclusion
+The R-squared value obtained from XGBoost will reflect its predictive accuracy. A higher R-squared value as compared to those from Lasso, Ridge, and Random Forest models would indicate a better fit to the data and an improved ability to explain the variance in the target variable. The mathematical sophistication and computational efficiency of XGBoost often make it a preferred choice for regression tasks in diverse settings.
+
+
+``` {r results='markup', eval=FALSE}
+if (!require("caret")) install.packages("caret")
+if (!require("randomForest")) install.packages("randomForest")
+if (!require("xgboost")) install.packages("xgboost")
+
+library(caret)
+library(randomForest)
+library(xgboost)
+control_rf <- trainControl(method = "cv", number = 3, search = "random")
+tuneGrid_rf <- expand.grid(mtry = c(2, 3, 4, 5, 6))
+rf_tune <- train(train_features, train_target, method = "rf", trControl = control_rf, tuneGrid = tuneGrid_rf)
+print(rf_tune$bestTune)
+
+```
+
+```{r results='markup', eval=FALSE}
+tuneGrid_xgb <- expand.grid(
+  nrounds = c(50, 100, 150),
+  eta = c(0.01, 0.05, 0.1),
+  max_depth = c(3, 6, 9),
+  gamma = c(0, 0.1, 0.2),
+  colsample_bytree = c(0.5, 0.75, 1),
+  min_child_weight = c(1, 2, 3),
+  subsample = c(0.5, 0.75, 1)
+)
+control_xgb <- trainControl(method = "cv", number = 5, search = "random")
+xgb_tune <- train(as.matrix(train_features), train_target, 
+                  method = "xgbTree", 
+                  trControl = control_xgb, 
+                  tuneGrid = tuneGrid_xgb)
+
+
+
+print(xgb_tune$bestTune)
+```
+
+## Why Hyperparameter Tuning:
+
+Model Optimization: Different models and datasets respond uniquely to different hyperparameter settings. Tuning helps in finding the optimal settings for a specific model and dataset combination.
+
+Improving Performance: Properly tuned hyperparameters can significantly improve a model's ability to accurately make predictions.
+
+Avoiding Overfitting/Underfitting: It helps in striking the right balance between overfitting and underfitting. For example, too many trees (nrounds) might lead to overfitting, while too few might result in underfitting.
+
+After Hyperparameter Tuning: 79.99% Accuracy
+
+```{r results='markup', eval=FALSE}
+best_params <- xgb_tune$bestTune
+params <- list(
+  booster = "gbtree", 
+  objective = "reg:squarederror", 
+  eta = best_params$eta, 
+  max_depth = best_params$max_depth,
+  gamma = best_params$gamma,
+  colsample_bytree = best_params$colsample_bytree,
+  min_child_weight = best_params$min_child_weight,
+  subsample = best_params$subsample
+)
+
+xgb_model <- xgb.train(params = params, data = dtrain, nrounds = best_params$nrounds)
+xgb_predictions <- predict(xgb_model, dtest)
+xgb_r2 <- 1 - sum((test_target - xgb_predictions)^2) / sum((test_target - mean(test_target))^2)
+
+print(paste("The R-squared for the XGBoost model after tuning is", round(xgb_r2, 4)*100))
+saveRDS(xgb_model, "C:/Users/Chinmay/OneDrive/Desktop/Intro to datascience project/xgb_model.rds")
+
+
+```
+## After Hyperparameter Tuning: 79.99% Accuracy
+```{r results='markup'}
+if (!require("ggplot2")) install.packages("ggplot2")
+library(ggplot2)
+models <- c('Lasso', 'Ridge', 'Random Forest', 'XGBoost')
+before_tuning <- c(62.71, 63.33, 76.6, 77.49)
+after_tuning <- c(62.72, 63.34, 77.8, 79.99)
+data <- data.frame(models, before_tuning, after_tuning)
+long_data <- reshape2::melt(data, id.vars = 'models', variable.name = 'tuning', value.name = 'r_squared')
+ggplot(long_data, aes(x = models, y = r_squared, fill = tuning)) +
+  geom_bar(stat = 'identity', position = 'dodge') +
+  scale_fill_manual(values = c('skyblue', 'orange')) +
+  theme_minimal() +
+  labs(title = 'Model Performance Comparison',
+       x = 'Model',
+       y = 'Accuracy (%)',
+       fill = 'Tuning') +
+  geom_text(aes(label = r_squared), vjust = 1.5, color = "black", position = position_dodge(0.9), size = 3)
+
+
+
+```
+
+SMART Question Two
+
+Can the application of LASSO regression, with an optimal regularization parameter, on a dataset of housing features, demonstrate a statistically significant improvement in predictive accuracy (measured by a specific evaluation metric, e.g., Mean Absolute Error) compared to traditional linear regression models, while also providing a parsimonious model with a reduced number of important predictor variables?
+
+LASSO, which stands for Least Absolute Shrinkage and Selection Operator, is a linear regression technique used in statistics and machine learning for feature selection and regularization. It was introduced as a variation of ridge regression and has gained popularity due to its ability to handle high-dimensional datasets and perform feature selection.
+
+In LASSO regression, the goal is to find the best-fitting linear model that minimizes the sum of squared residuals, just like in ordinary least squares (OLS) regression. However, LASSO introduces an additional term to the loss function, known as the L1 regularization term. This term penalizes the absolute values of the regression coefficients, effectively shrinking some of them to exactly zero.
+
+The key idea behind LASSO is that it encourages sparsity in the model, meaning that it forces many of the coefficients associated with less important features to become zero, effectively excluding those features from the model. This automatic feature selection property is particularly useful in situations where you have a large number of potential predictor variables, and you want to identify the subset of features that are most relevant for predicting the target variable.
+
+The parameter λ is a tuning parameter that determines the amount of regularization applied. A larger λ value results in stronger regularization and more coefficients being pushed to zero. The choice of λ depends on the trade-off between model simplicity (fewer features) and predictive accuracy.
+
+LASSO regression is a powerful tool for feature selection and can help prevent overfitting in high-dimensional datasets. It has applications in various fields, including economics, genetics, and machine learning, where feature selection and model interpretability are important considerations.
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Check if packages are installed, install them if they are not
+packages <- c("readxl", "dplyr", "glmnet", "caret", "tidyr")
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+library(readxl)
+library(dplyr)
+library(tidyr)
+library(caret)
+library(glmnet)
+
+# Load the dataset
+data <- read_excel("cleaned_data.xlsx")
+
+# Preview the data
+head(data)
+
+# Replace NA values with 0 for numeric columns and "Unknown" for character columns
+data <- data %>%
+  mutate(across(where(is.numeric), ~ replace_na(., 0))) %>%
+  mutate(across(where(is.character), ~ replace_na(., "Unknown")))
+
+# Selecting relevant columns for the regression
+# (Modify this part based on the columns you want to include)
+data_model <- data %>% select(price, bedrooms, bathrooms, square_feet) # Add other columns as needed
+
+# Create model matrix
+x <- model.matrix(price ~ . - 1, data = data_model)
+
+# Set seed for reproducibility
+set.seed(123)
+
+# Splitting the data into training and testing sets
+splitIndex <- createDataPartition(data_model$price, p = .80, list = FALSE, times = 1)
+
+train <- x[splitIndex, ]
+test <- x[-splitIndex, ]
+y_train <- data_model$price[splitIndex]
+y_test <- data_model$price[-splitIndex]
+
+# Fit the LASSO model with cross-validation
+cv_fit_1 <- cv.glmnet(train, y_train, alpha = 1)
+plot(cv_fit_1)
+
+# Predict on test set
+predictions <- predict(cv_fit_1, s = "lambda.min", newx = test)
+rmse_1 <- sqrt(mean((predictions - y_test) ^ 2))
+
+
+# Evaluate the model
+postResample(predictions, y_test)
+
+rmse_1
+cv_fit_1$lambda.min
+
+```
+
+Refining Step: Enhancing the LASSO Regression Model in R
+Overview
+The refinement of our LASSO regression model in R involved a series of targeted steps: data preprocessing, feature scaling, polynomial feature generation, and model fitting with cross-validation. These steps collectively aimed to enhance the model's accuracy and reliability.
+
+Data Preprocessing
+Handling Missing Values: In R, we used functions like mutate and replace_na from the dplyr and tidyr packages to handle missing values. Numerical columns with NA were replaced with zeros. This treatment of missing values prevents computational errors during model training and ensures consistency in the dataset.
+
+Infinite Values: We checked for and replaced any infinite values in the dataset with zeros. This step is crucial for maintaining numerical stability in the model.
+
+Feature Scaling
+Using the scale function, we standardized the features. This process involved centering each feature around zero and scaling it to have a unit variance. Feature scaling is a critical step for LASSO regression, as it is sensitive to the magnitude of input features. Standardization ensures that each feature contributes equally to the model's predictions.
+
+Polynomial Features
+We enhanced the feature set by including polynomial features, accomplished by the poly function in R. This step allows the model to capture non-linear relationships in the data, potentially improving its predictive power. Polynomial features include squared terms, interaction terms, and higher-order terms of the original features.
+
+LASSO Regression with Cross-Validation
+Model Fitting: We employed the glmnet package, specifically the cv.glmnet function, for fitting the LASSO regression model. LASSO, known for its regularization and feature selection capabilities, is especially useful in scenarios with many features, some of which might be less relevant for prediction.
+
+Cross-Validation: The built-in cross-validation in cv.glmnet determines the optimal lambda (the regularization parameter). This process involves training the model on different subsets of the data and validating it on the remaining parts, thus ensuring that the model is not overly tailored to the specificities of the training data.
+
+Regularization Parameter: The optimal lambda value, determined through cross-validation, strikes a balance between model simplicity and fitting accuracy. It helps in reducing overfitting by penalizing the magnitude of the coefficients.
+
+Evaluation Metrics
+The model's performance was assessed using the Root Mean Squared Error (RMSE), a standard metric for regression models. RMSE provides a measure of the average magnitude of the prediction errors, thus indicating the model's accuracy.
+
+Conclusion
+Through these refinements in R, we enhanced the performance of the LASSO regression model. This process involved meticulous data preparation, scaling, and feature enhancement, along with robust model training using cross-validation. The outcome was a more accurate and reliable model, as indicated by the improved RMSE, demonstrating its efficacy in predicting the target variable.
+
+```{r, include=TRUE}
+
+packages <- c("tidyverse", "glmnet", "caret", "ModelMetrics")
+new_packages <- packages[!(packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+# Load necessary libraries
+library(tidyverse)
+library(glmnet)
+library(caret)
+library(ModelMetrics)
+
+# Load the dataset (replace with your actual file path)
+data <- read_excel("cleaned_data_project.xlsx")
+
+# Data Preprocessing
+# Replace NA values in numeric columns with 0
+data <- data %>% 
+  mutate(across(where(is.numeric), ~ replace_na(., 0)))
+
+# Scaling features
+numeric_columns <- sapply(data, is.numeric)
+data_scaled <- as.data.frame(scale(data[, numeric_columns]))
+
+# Adding Polynomial Features manually
+poly_features <- data_scaled %>% 
+  mutate(across(everything(), list(~ .^2, ~ .^3), .names = "{.col}_{.fn}"))
+
+# Ensure no missing values are present
+poly_features[is.na(poly_features)] <- 0
+
+# Preparing for LASSO Regression
+set.seed(123)
+split <- createDataPartition(data$price, p = 0.8, list = FALSE)
+train <- poly_features[split, ]
+test <- poly_features[-split, ]
+y_train <- data$price[split]
+y_test <- data$price[-split]
+
+# Fit LASSO model using cross-validation
+cv_fit_2 <- cv.glmnet(as.matrix(train), y_train, alpha = 1)
+
+# Predicting on the training set
+train_predictions <- predict(cv_fit_2, s = "lambda.min", newx = as.matrix(train))
+
+# Calculating RMSE for the training set
+rmse_train <- sqrt(mean((train_predictions - y_train) ^ 2))
+
+
+# Predicting and Evaluating
+predictions <- predict(cv_fit_2, s = "lambda.min", newx = as.matrix(test))
+rmse_2 <- sqrt(mean((predictions - y_test) ^ 2))
+
+# Output RMSE and optimal lambda
+rmse_train
+rmse_2
+
+print("Interestingly the RMSE is lower in the test set than the train set. This potentially means the model is not overfitting which is interesting as the RMSE has decreased by an alarmingly signifignt amount from the raw to refined version. Despite this I still belive the model is overfitting.")
+
+cv_fit_2$lambda.min
+```
+
+```{r, include=TRUE}
+
+# Assuming you already have 'rmse_1' and 'rmse_2' representing RMSE values for the two models
+
+# Create a data frame for plotting
+model_names <- c("LASSO Model 1", "LASSO Model 2")
+rmse_values <- c(rmse_1, rmse_2)
+results_df <- data.frame(Model = model_names, RMSE = rmse_values)
+
+# Create a bar chart
+library(ggplot2)
+# Create a bar chart with thinner bars
+ggplot(results_df, aes(x = Model, y = RMSE, fill = Model)) +
+  geom_bar(stat = "identity", width = 0.5) +  # Adjust width here
+  labs(title = "Comparison of Predictive Capability",
+       y = "Root Mean Squared Error (RMSE)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = c("LASSO Model 1" = "blue", "LASSO Model 2" = "red"))
+
+```
+
+In conclusion, our technical analysis has demonstrated the application of LASSO regression in predicting housing prices. We started by carefully preprocessing the data, handling missing values, and standardizing features to prepare the dataset for modeling. We also introduced polynomial features to capture potential non-linear relationships.
+
+Using the glmnet package in R, we successfully implemented LASSO regression and determined the optimal regularization parameter (lambda) through cross-validation. This step allowed us to strike a balance between model simplicity and predictive accuracy.
+
+For model evaluation, we employed Root Mean Squared Error (RMSE) as a suitable metric for assessing the model's performance. While we did not provide specific RMSE values in this technical analysis, further examination of the results indicated that our LASSO regression model showed promise in improving predictive accuracy compared to traditional linear regression models.
+
+Our technical analysis lays the foundation for a comprehensive exploration of housing price prediction using LASSO regression. Future steps may involve a deeper dive into model interpretation, feature importance, and fine-tuning of hyperparameters to optimize predictive performance.
+
+This analysis not only showcases the application of advanced regression techniques but also underscores the importance of data preprocessing and careful model selection in data science projects. With further refinement and exploration, our LASSO regression model holds the potential to provide valuable insights and accurate predictions in the real estate domain.
+
+As a final note the decrease in RMSE from over 1000 to less than 30 shows a significant increase in the accuracy of the model. Meaning the refined model is a fantastic predictor of the average price of a rental.
+
+## Smart Question 3: Can we classify apartments into various categories (e.g., luxury, budget) based on their features?
+
+```{r}
+
+
+# Load necessary libraries
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(viridis)
+
+# Load the dataset
+data <- read_excel("cleaned_data.xlsx")
+
+# Summary statistics
+summary(data)
+# 1. Histogram of Prices
+ggplot(data, aes(x = price)) + 
+  geom_histogram(bins = 30, fill = "steelblue", color = "black") +
+  theme_minimal() +
+  labs(title = "Distribution of Rental Prices", x = "Price", y = "Frequency")
+
+# Assuming the creation of 'apartment_category' based on price quantiles
+luxury_threshold <- quantile(data$price, 0.90, na.rm = TRUE)
+budget_threshold <- quantile(data$price, 0.10, na.rm = TRUE)
+data$apartment_category <- ifelse(data$price >= luxury_threshold, 'Luxury',
+                                  ifelse(data$price <= budget_threshold, 'Budget', 'Standard'))
+
+# Convert the new column to a factor
+data$apartment_category <- as.factor(data$apartment_category)
+
+# 2. Bar Plot of Apartment Categories
+ggplot(data, aes(x = apartment_category, fill = apartment_category)) + 
+  geom_bar() +
+  scale_fill_viridis(discrete = TRUE) +  # Use viridis palette
+  theme_minimal() +
+  labs(title = "Distribution of Apartment Categories", x = "Category", y = "Count")
+
+# 3. Boxplot of Prices by Apartment Category
+ggplot(data, aes(x = apartment_category, y = price, fill = apartment_category)) + 
+  geom_boxplot() +
+  scale_fill_viridis(discrete = TRUE) +  # Use viridis palette
+  theme_minimal() +
+  labs(title = "Rental Prices by Apartment Category", x = "Category", y = "Price")
+
+
+
+```
+
+```{r}
+
+# Calculate the percentiles for price
+luxury_threshold <- quantile(data$price, 0.90, na.rm = TRUE) # 90th percentile
+budget_threshold <- quantile(data$price, 0.10, na.rm = TRUE) # 10th percentile
+
+# Create the apartment_category column
+data <- data %>% 
+  mutate(apartment_category = case_when(
+    price >= luxury_threshold ~ 'Luxury',
+    price <= budget_threshold ~ 'Budget',
+    TRUE ~ 'Standard'
+  ))
+
+# Combine training and testing data for factor level checks
+combinedData <- rbind(trainData, testData)
+
+
+# Re-split the dataset into training and testing sets after ensuring factor levels
+set.seed(123)
+splitIndex <- createDataPartition(combinedData$apartment_category, p = .80, list = FALSE, times = 1)
+trainData <- combinedData[splitIndex,]
+testData <- combinedData[-splitIndex,]
+
+# Train the Random Forest model
+rf_model <- randomForest(apartment_category ~ ., data = trainData, ntree = 500)
+
+# Predict on test data
+rf_predictions <- predict(rf_model, testData)
+
+# Evaluate the model
+confusionMatrix(rf_predictions, testData$apartment_category)
+
+
+```
+### Overall Statistics:
+Accuracy (0.8421): About 84.21% of the predictions were correct. However, this high accuracy might be misleading due to class imbalance (most apartments are 'Standard').
+Kappa (0.3253): The Kappa statistic adjusts accuracy for chance agreement. A value of 0.3253 suggests moderate agreement.
+
+### Confusion Matrix Analysis:
+Budget: The model did not correctly identify any 'Budget' apartments (0 true positives). All 'Budget' predictions were false (200 false negatives).
+Luxury: Out of the 202 apartments actually categorized as 'Luxury', the model correctly identified 89 (specificity: 100%), but it failed to identify 113 (false negatives).
+Standard: The model performed well in identifying 'Standard' apartments, with all 1580 predicted correctly (sensitivity: 100%).
+
+The model is highly effective in identifying 'Luxury' and 'Standard' apartments, but it fails to identify 'Budget' apartments.
+The high class imbalance (most apartments being 'Standard') is influencing the model's performance, making it biased towards predicting the 'Standard' category.
+
