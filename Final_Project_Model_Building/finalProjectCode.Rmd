@@ -735,3 +735,111 @@ Standard: The model performed well in identifying 'Standard' apartments, with al
 The model is highly effective in identifying 'Luxury' and 'Standard' apartments, but it fails to identify 'Budget' apartments.
 The high class imbalance (most apartments being 'Standard') is influencing the model's performance, making it biased towards predicting the 'Standard' category.
 
+# Smart Question 4
+## Apartment Market Segmentation Using K-means
+### How can the apartment market be segmented based on price and geographical location?
+
+## Introduction
+
+The real estate market is dynamic and multifaceted, with prices varying widely based on location and a range of other factors. Understanding these variations is crucial for both buyers and sellers in the market. In this analysis, we explore how the apartment market can be segmented using K-means clustering based on two key features: price and geographical location.
+
+```{r include=FALSE}
+# Load necessary libraries
+library(ggplot2)
+library(readxl)
+library(cluster)
+
+# Read the dataset
+data <- read_excel("cleaned_data.xlsx")
+
+# Check for NaN or Inf values
+sum(is.nan(data$latitude), is.nan(data$longitude), is.nan(data$price), is.infinite(data$latitude), is.infinite(data$longitude), is.infinite(data$price))
+
+# Remove rows with NaN or Inf values
+data <- data[!is.nan(data$latitude) & !is.nan(data$longitude) & !is.nan(data$price) & !is.infinite(data$latitude) & !is.infinite(data$longitude) & !is.infinite(data$price), ]
+
+```
+
+## Data Preprocessing
+The data was first cleansed of any NaN or infinite values to ensure the integrity of the dataset. We then standardized the latitude, longitude, and price columns to place equal weight on each feature during the clustering process.
+
+```{r}
+# Step 1: Data Preprocessing
+
+# Remove rows with missing values in "latitude," "longitude," and "price" columns
+data <- data[complete.cases(data[, c("latitude", "longitude", "price")]), ]
+
+# Convert "latitude," "longitude," and "price" columns to numeric
+data$latitude <- as.numeric(data$latitude)
+data$longitude <- as.numeric(data$longitude)
+data$price <- as.numeric(data$price)
+
+# Replace NAs with zero in "latitude," "longitude," and "price" columns
+data$latitude[is.na(data$latitude)] <- 0
+data$longitude[is.na(data$longitude)] <- 0
+data$price[is.na(data$price)] <- 0
+
+# Standardize the "latitude," "longitude," and "price" columns
+data[, c("latitude", "longitude", "price")] <- scale(data[, c("latitude", "longitude", "price")])
+
+```
+
+## Methodology
+To perform our analysis, we utilized K-means clustering, a method of vector quantization that is particularly suited to partitioning a data set into K distinct, non-overlapping subsets.
+
+## K-means Clustering
+We chose to segment the market into three clusters based on the assumption that there would be three distinct tiers in the market: high, medium, and low. The optimal number of clusters was determined to be three, based on the data distribution.
+
+```{r}
+# Step 2: Perform K-means Clustering
+# Set the seed for reproducibility
+set.seed(123)
+
+# Define the optimal number of clusters
+num_clusters <- 3 
+
+# Perform K-means clustering on "latitude," "longitude," and "price" columns
+clusters <- kmeans(data[, c("latitude", "longitude", "price")], centers = num_clusters)
+
+# Add cluster information to the dataset
+data$cluster <- as.factor(clusters$cluster)
+
+```
+
+## Results and Discussion
+Our clustering produced distinct segments, which could correlate with different types of housing markets. The clusters may represent urban, suburban, and rural markets, each with its unique characteristics in terms of price and location.
+
+```{r}
+# Step 3: Data Visualization
+# Plot the clusters on a geographical map
+
+ggplot(data, aes(x = longitude, y = latitude, color = cluster)) +
+  geom_point() +
+  labs(title = "Apartment Market Segmentation",
+       x = "Longitude",
+       y = "Latitude",
+       color = "Market Segment")
+
+# Additional visualization: Boxplot of price distribution in each cluster
+ggplot(data, aes(x = cluster, y = price, fill = cluster)) +
+  geom_boxplot() +
+  labs(title = "Price Distribution in Each Market Segment",
+       x = "Market Segment",
+       y = "Price")
+
+```
+
+Cluster Analysis:
+
+The analysis using K-means clustering has delineated three market segments:
+
+Cluster 1: Urban areas characterized by high prices and varied housing options, reflecting the economic diversity and dense population of city centers. The wide price range in this cluster is consistent with the varying levels of amenities and accessibility found in urban environments.
+
+Cluster 2: Suburban locales with moderate housing prices and lower density. The clustering algorithm's tighter price distribution suggests a level of uniformity in housing offerings typical of suburban markets.
+
+Cluster 3: Rural regions exhibiting lower prices and sparse population density. The limited price variation within this cluster points to uniformity in housing types and market offerings, often seen in less developed areas.
+
+The boxplot of price distribution within each cluster shows a wide range in Cluster 1, suggesting a diverse market that includes both budget and luxury apartments. Cluster 2 has a more concentrated distribution around the median, while Cluster 3 displays a narrow price range, possibly indicating a niche market.
+
+## Conclusion
+K-means clustering has provided a clear segmentation of the apartment market, revealing the underlying structure based on geographical location and price. This segmentation can be leveraged by stakeholders to tailor their strategies according to the characteristics of each market segment.
